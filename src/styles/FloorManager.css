@@ -1,0 +1,45 @@
+/**
+ * FloorManager コンポーネントのスタイル
+ */
+
+.floor-manager {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.floor-manager h2 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.floors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.floor-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.floor-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .floor-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+}

@@ -1,0 +1,49 @@
+/**
+ * BuildingCommonAreaInput コンポーネントのスタイル
+ */
+
+.building-common-area-input {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #fff3e0;
+  border: 2px solid #ff9800;
+  border-radius: 8px;
+}
+
+.building-common-area-input h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #f57c00;
+}
+
+.building-common-area-input .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.building-common-area-input label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.building-common-area-input input {
+  padding: 0.75rem;
+  border: 2px solid #ff9800;
+  border-radius: 4px;
+  font-size: 1rem;
+  max-width: 300px;
+}
+
+.building-common-area-input input:focus {
+  outline: none;
+  border-color: #f57c00;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.25);
+}
+
+.building-common-area-input .hint {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}

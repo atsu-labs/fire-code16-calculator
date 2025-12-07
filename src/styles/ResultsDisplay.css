@@ -1,0 +1,135 @@
+/**
+ * ResultsDisplay コンポーネントのスタイル
+ */
+
+.results-display {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f0f8ff;
+  border: 2px solid #0066cc;
+  border-radius: 8px;
+}
+
+.results-display.empty {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.results-display h2 {
+  margin-top: 0;
+  color: #0066cc;
+  font-size: 1.5rem;
+}
+
+.floor-result {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.floor-result h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #0066cc;
+  padding-bottom: 0.5rem;
+}
+
+.usage-result {
+  margin-bottom: 1.5rem;
+}
+
+.usage-result:last-child {
+  margin-bottom: 0;
+}
+
+.usage-result h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.result-table th,
+.result-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.result-table th {
+  font-weight: 500;
+  color: #555;
+  width: 60%;
+}
+
+.result-table td {
+  text-align: right;
+  color: #333;
+}
+
+.result-table .total-row {
+  font-weight: bold;
+  background-color: #e6f3ff;
+}
+
+.result-table .total-row th,
+.result-table .total-row td {
+  border-top: 2px solid #0066cc;
+  border-bottom: 2px solid #0066cc;
+}
+
+.building-totals {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #fff9e6;
+  border: 2px solid #ff9800;
+  border-radius: 4px;
+}
+
+.building-totals h3 {
+  margin-top: 0;
+  color: #f57c00;
+  font-size: 1.2rem;
+}
+
+.building-totals .result-table thead th {
+  background-color: #ffe0b2;
+  font-weight: bold;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.building-totals .result-table tbody td {
+  text-align: right;
+  padding: 0.5rem;
+}
+
+.building-totals .result-table tbody td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.building-totals .result-table tbody tr:hover {
+  background-color: #fff3e0;
+}
+
+.grand-total-row {
+  background-color: #ff9800 !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+.grand-total-row td {
+  padding: 0.75rem !important;
+  border-top: 3px solid #f57c00 !important;
+}

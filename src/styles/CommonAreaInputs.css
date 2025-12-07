@@ -1,0 +1,92 @@
+/**
+ * CommonAreaInputs コンポーネントのスタイル
+ */
+
+.common-area-inputs {
+  margin: 0.5rem 0;
+  padding: 1rem;
+  background-color: #e8f4f8;
+  border: 1px solid #b8dce8;
+  border-radius: 4px;
+}
+
+.common-area-inputs h4 {
+  margin-top: 0;
+  font-size: 1rem;
+  color: #0066cc;
+}
+
+.input-row {
+  margin-bottom: 0.75rem;
+}
+
+.input-row:last-child {
+  margin-bottom: 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.input-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.input-group input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  max-width: 200px;
+  min-height: 44px; /* タッチターゲット最小サイズ */
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.input-group input:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.input-group input:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.input-group input:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .input-group input {
+    max-width: 100%;
+  }
+
+  .hint {
+    font-size: 0.75rem;
+  }
+}
+
+/* タブレット対応 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .input-group input {
+    max-width: 300px;
+  }
+}
