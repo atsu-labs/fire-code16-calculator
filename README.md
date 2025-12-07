@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# 消防法 用途別面積計算機 (Fire Law Area Calculator)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+消防法に基づく複合用途防火対象物の用途別面積を計算するWebアプリケーションです。
+各階の用途ごとの専用部分面積を入力し、各種共用部（階共用部、建物全体共用部、特定用途間共用部）を按分計算して、最終的な用途別延べ面積を算出します。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **階の管理**: 地上階・地階の追加、削除、並べ替え
+- **用途の管理**: 消防法施行令別表第一に基づく用途の追加・設定
+- **面積入力**:
+  - 用途ごとの専用部分面積
+  - 階共用部面積（その階の全用途で按分）
+  - 建物全体共用部面積（建物全体の全用途で按分）
+  - グループ共用部（特定の用途間でのみ共有する面積の按分）
+- **自動計算**: 入力値に基づき、共用部を自動的に按分して合算
+- **結果表示**: 用途ごとの合計面積と内訳の表示
 
-## React Compiler
+## 技術スタック
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 19, TypeScript
+- **Build Tool**: Vite
+- **Testing**: Vitest, React Testing Library
+- **Linter/Formatter**: ESLint
 
-## Expanding the ESLint configuration
+## セットアップ
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 必要要件
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js (v18以上推奨)
+- npm
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### インストール
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 開発サーバーの起動
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+ブラウザで `http://localhost:5173` を開いてください。
+
+## テスト
+
+### ユニットテスト・統合テスト
+
+```bash
+npm test
+```
+
+### UIモードでのテスト実行
+
+```bash
+npm run test:ui
+```
+
+### カバレッジ計測
+
+```bash
+npm run test:coverage
+```
+
+## プロジェクト構成
+
+```
+src/
+├── assets/         # 静的リソース
+├── components/     # Reactコンポーネント
+│   ├── FloorManager.tsx       # 階の管理
+│   ├── UsageManager.tsx       # 用途の管理
+│   ├── CommonAreaInputs.tsx   # 共用部入力
+│   ├── UsageGroupSelector.tsx # グループ共用部設定
+│   └── ResultsDisplay.tsx     # 計算結果表示
+├── contexts/       # グローバル状態管理 (AppStateContext)
+├── hooks/          # カスタムフック
+├── services/       # ビジネスロジック
+│   ├── CalculationEngine.ts   # 面積計算エンジン
+│   └── ValidationService.ts   # バリデーション
+├── types/          # 型定義
+└── utils/          # ユーティリティ関数
+```
+
+## ライセンス
+
+Private
