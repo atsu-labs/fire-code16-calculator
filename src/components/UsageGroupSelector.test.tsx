@@ -3,8 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { render } from '@testing-library/react';
 import { AppStateProvider } from '../contexts/AppStateContext';
 import { UsageGroupSelector } from './UsageGroupSelector';
 
@@ -21,8 +20,6 @@ describe('UsageGroupSelector', () => {
     });
 
     it('用途が3つ以上の場合は表示される', async () => {
-      const user = userEvent.setup();
-      
       render(
         <AppStateProvider>
           <UsageGroupSelector floorId="floor-1" />

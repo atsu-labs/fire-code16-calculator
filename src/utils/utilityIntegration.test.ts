@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { generateFloors } from "./floorGenerator";
 import { calculateFloorDiff } from "./floorDiffCalculator";
 import { cleanupUsageGroupsAfterFloorDeletion } from "./cascadeDeleteHelper";
-import { type Floor, type Usage, type UsageGroup } from "../types";
+import { type Usage, type UsageGroup } from "../types";
 
 describe("Utility Functions Integration", () => {
   // ヘルパー関数: Usage作成

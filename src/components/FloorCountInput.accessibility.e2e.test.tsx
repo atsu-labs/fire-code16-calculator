@@ -154,7 +154,6 @@ describe.skip('FloorCountInput アクセシビリティE2E - Task 7.2', () => {
       const focusableElements: HTMLElement[] = [];
       
       // 最初から順番にTabキーを押していく
-      let currentElement = document.activeElement;
       
       // 地上階数からスタート
       await user.click(aboveGroundInput);
@@ -213,8 +212,8 @@ describe.skip('FloorCountInput アクセシビリティE2E - Task 7.2', () => {
     it('すべての入力フィールドに適切なlabel要素が関連付けられている', () => {
       render(<App />);
 
-      const aboveGroundInput = screen.getByLabelText('地上階数');
-      const basementInput = screen.getByLabelText('地階数');
+      const aboveGroundInput = screen.getByLabelText('地上階数') as HTMLInputElement;
+      const basementInput = screen.getByLabelText('地階数') as HTMLInputElement;
 
       // label要素が存在することを確認
       expect(aboveGroundInput.labels).toHaveLength(1);

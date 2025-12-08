@@ -354,9 +354,6 @@ describe.skip('FloorCountInput パフォーマンステスト - Task 7.3', () =>
       });
 
       // 5階の共用部面積を変更（データ入力をシミュレート）
-      const fifthFloorCommonArea = screen.getByLabelText('階共用部面積', {
-        selector: `[id*="${screen.getByDisplayValue('5階').id.replace('floor-name-', 'floor-common-')}"]`
-      });
       
       // IDから共用部面積フィールドを見つける
       const floorInputs = screen.getAllByLabelText(/階名/i);
