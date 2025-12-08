@@ -26,6 +26,7 @@ export class CalculationEngine {
    * Requirement 7: 階の共用部面積の案分計算
    *
    * 階内の各用途の専用部分面積の比率に応じて共用部面積を案分
+   * 累積丸めを使用して丸め誤差を最小化
    *
    * @param floorUsages - 階内の用途リスト
    * @param floorCommonArea - 階の共用部面積
@@ -60,11 +61,20 @@ export class CalculationEngine {
       };
     }
 
-    // 各用途に案分
+    // 累積丸めで各用途に案分
     const result = new Map<string, number>();
+    let cumulativeExact = 0;
+    let cumulativeRounded = 0;
+
     floorUsages.forEach((usage) => {
       const ratio = usage.exclusiveArea / totalExclusiveArea;
-      const distributedArea = this.round(ratio * floorCommonArea);
+      cumulativeExact += ratio * floorCommonArea;
+
+      // 累積値を丸めて、前回の累積丸め値との差分を取る
+      const newCumulativeRounded = this.round(cumulativeExact);
+      const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+      cumulativeRounded = newCumulativeRounded;
       result.set(usage.id, distributedArea);
     });
 
@@ -76,6 +86,7 @@ export class CalculationEngine {
    * Requirement 8: 建物全体の共用部面積の案分計算
    *
    * 全階・全用途の専用部分面積の比率に応じて共用部面積を案分
+   * 累積丸めを使用して丸め誤差を最小化
    *
    * @param allUsages - 全階の全用途リスト
    * @param buildingCommonArea - 建物全体の共用部面積
@@ -110,11 +121,20 @@ export class CalculationEngine {
       };
     }
 
-    // 各用途に案分
+    // 累積丸めで各用途に案分
     const result = new Map<string, number>();
+    let cumulativeExact = 0;
+    let cumulativeRounded = 0;
+
     allUsages.forEach((usage) => {
       const ratio = usage.exclusiveArea / totalExclusiveArea;
-      const distributedArea = this.round(ratio * buildingCommonArea);
+      cumulativeExact += ratio * buildingCommonArea;
+
+      // 累積値を丸めて、前回の累積丸め値との差分を取る
+      const newCumulativeRounded = this.round(cumulativeExact);
+      const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+      cumulativeRounded = newCumulativeRounded;
       result.set(usage.id, distributedArea);
     });
 
@@ -126,6 +146,7 @@ export class CalculationEngine {
    * Requirement 9: 特定用途間の共用部面積の案分計算
    *
    * 用途グループ内の各用途の専用部分面積の比率に応じて共用部面積を案分
+   * 累積丸めを使用して丸め誤差を最小化
    *
    * @param allUsages - 全用途リスト（グループの用途を含む階の全用途）
    * @param usageGroup - 用途グループ
@@ -179,11 +200,20 @@ export class CalculationEngine {
       };
     }
 
-    // グループ内の各用途に案分
+    // 累積丸めでグループ内の各用途に案分
     const result = new Map<string, number>();
+    let cumulativeExact = 0;
+    let cumulativeRounded = 0;
+
     groupUsages.forEach((usage) => {
       const ratio = usage.exclusiveArea / totalExclusiveArea;
-      const distributedArea = this.round(ratio * usageGroup.commonArea);
+      cumulativeExact += ratio * usageGroup.commonArea;
+
+      // 累積値を丸めて、前回の累積丸め値との差分を取る
+      const newCumulativeRounded = this.round(cumulativeExact);
+      const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+      cumulativeRounded = newCumulativeRounded;
       result.set(usage.id, distributedArea);
     });
 

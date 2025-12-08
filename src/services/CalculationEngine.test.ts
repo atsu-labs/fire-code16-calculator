@@ -65,12 +65,20 @@ describe("CalculationEngine", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          // 100/450 * 100 = 22.222... -> 22.22
+          // 累積丸めによる計算:
+          // u1: 100/450 * 100 = 22.222... → 累積 22.22 → 差分 22.22
           expect(result.value.get("u1")).toBe(22.22);
-          // 200/450 * 100 = 44.444... -> 44.44
-          expect(result.value.get("u2")).toBe(44.44);
-          // 150/450 * 100 = 33.333... -> 33.33
+          // u2: 200/450 * 100 = 44.444... → 累積 66.67 (22.22+44.45) → 差分 44.45
+          expect(result.value.get("u2")).toBe(44.45);
+          // u3: 150/450 * 100 = 33.333... → 累積 100.00 → 差分 33.33
           expect(result.value.get("u3")).toBe(33.33);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) +
+            (result.value.get("u2") || 0) +
+            (result.value.get("u3") || 0);
+          expect(sum).toBe(100);
         }
       });
 
@@ -377,12 +385,20 @@ describe("CalculationEngine", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          // 100/550 * 100 = 18.181... -> 18.18
+          // 累積丸めによる計算:
+          // u1: 100/550 * 100 = 18.181... → 累積 18.18 → 差分 18.18
           expect(result.value.get("u1")).toBe(18.18);
-          // 200/550 * 100 = 36.363... -> 36.36
-          expect(result.value.get("u2")).toBe(36.36);
-          // 250/550 * 100 = 45.454... -> 45.45
+          // u2: 200/550 * 100 = 36.363... → 累積 54.55 (18.18+36.37) → 差分 36.37
+          expect(result.value.get("u2")).toBe(36.37);
+          // u3: 250/550 * 100 = 45.454... → 累積 100.00 → 差分 45.45
           expect(result.value.get("u3")).toBe(45.45);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) +
+            (result.value.get("u2") || 0) +
+            (result.value.get("u3") || 0);
+          expect(sum).toBe(100);
         }
       });
 
@@ -562,12 +578,20 @@ describe("CalculationEngine", () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          // 100/450 * 100 = 22.222... -> 22.22
+          // 累積丸めによる計算:
+          // u1: 100/450 * 100 = 22.222... → 累積 22.22 → 差分 22.22
           expect(result.value.get("u1")).toBe(22.22);
-          // 200/450 * 100 = 44.444... -> 44.44
-          expect(result.value.get("u2")).toBe(44.44);
-          // 150/450 * 100 = 33.333... -> 33.33
+          // u2: 200/450 * 100 = 44.444... → 累積 66.67 (22.22+44.45) → 差分 44.45
+          expect(result.value.get("u2")).toBe(44.45);
+          // u3: 150/450 * 100 = 33.333... → 累積 100.00 → 差分 33.33
           expect(result.value.get("u3")).toBe(33.33);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) +
+            (result.value.get("u2") || 0) +
+            (result.value.get("u3") || 0);
+          expect(sum).toBe(100);
         }
       });
 
@@ -1414,6 +1438,147 @@ describe("CalculationEngine", () => {
           expect(buildingTotals.value.grandTotal).toBeGreaterThan(0);
         }
       });
+    });
+  });
+
+  describe("累積丸め (Cumulative Rounding) による誤差修正", () => {
+    it("should ensure sum equals total when distributing floor common area", () => {
+      // 10.00を7つに均等案分する極端なケース
+      const usages: Usage[] = Array.from({ length: 7 }, (_, i) => ({
+        id: `u${i + 1}`,
+        annexedCode: `annex${i + 1}`,
+        annexedName: `用途${i + 1}`,
+        exclusiveArea: 1, // すべて同じ比率
+      }));
+      const floorCommonArea = 10;
+
+      const result = engine.calculateFloorCommonArea(usages, floorCommonArea);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        // 各案分値を取得
+        const values = Array.from(result.value.values());
+
+        // 合計が正確に10.00になることを確認
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        expect(sum).toBe(10);
+
+        // すべての値が小数点以下2桁の精度であることを確認（浮動小数点誤差を許容）
+        values.forEach((val) => {
+          const rounded = Math.round(val * 100) / 100;
+          expect(Math.abs(val - rounded)).toBeLessThan(0.000001);
+        });
+
+        // 個別丸めだと 1.43 × 7 = 10.01 になるが、累積丸めで正確に10.00になる
+        console.log("7つの案分値:", values);
+        console.log("合計:", sum);
+      }
+    });
+
+    it("should ensure sum equals total when distributing building common area", () => {
+      // 複雑な比率での案分
+      const usages: Usage[] = [
+        {
+          id: "u1",
+          annexedCode: "a1",
+          annexedName: "用途1",
+          exclusiveArea: 33.33,
+        },
+        {
+          id: "u2",
+          annexedCode: "a2",
+          annexedName: "用途2",
+          exclusiveArea: 66.67,
+        },
+        {
+          id: "u3",
+          annexedCode: "a3",
+          annexedName: "用途3",
+          exclusiveArea: 100.0,
+        },
+      ];
+      const buildingCommonArea = 50.55;
+
+      const result = engine.calculateBuildingCommonArea(
+        usages,
+        buildingCommonArea
+      );
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const values = Array.from(result.value.values());
+        const sum = values.reduce((acc, val) => acc + val, 0);
+
+        // 合計が元の値と一致することを確認
+        expect(sum).toBe(buildingCommonArea);
+      }
+    });
+
+    it("should ensure sum equals total when distributing usage group common area", () => {
+      const usages: Usage[] = [
+        {
+          id: "u1",
+          annexedCode: "a1",
+          annexedName: "用途1",
+          exclusiveArea: 111.11,
+        },
+        {
+          id: "u2",
+          annexedCode: "a2",
+          annexedName: "用途2",
+          exclusiveArea: 222.22,
+        },
+        {
+          id: "u3",
+          annexedCode: "a3",
+          annexedName: "用途3",
+          exclusiveArea: 333.33,
+        },
+      ];
+
+      const usageGroup: UsageGroup = {
+        floorId: "f1",
+        id: "g1",
+        usageIds: ["u1", "u2", "u3"],
+        commonArea: 99.99,
+      };
+
+      const result = engine.calculateUsageGroupCommonArea(usages, usageGroup);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const values = Array.from(result.value.values());
+        const sum = values.reduce((acc, val) => acc + val, 0);
+
+        // 合計が元の値と一致することを確認
+        expect(sum).toBe(usageGroup.commonArea);
+      }
+    });
+
+    it("should handle edge case: distributing 0.01 among many usages", () => {
+      // 非常に小さい値を多数に案分する極端なケース
+      const usages: Usage[] = Array.from({ length: 5 }, (_, i) => ({
+        id: `u${i + 1}`,
+        annexedCode: `annex${i + 1}`,
+        annexedName: `用途${i + 1}`,
+        exclusiveArea: 1,
+      }));
+      const floorCommonArea = 0.01;
+
+      const result = engine.calculateFloorCommonArea(usages, floorCommonArea);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const values = Array.from(result.value.values());
+        const sum = values.reduce((acc, val) => acc + val, 0);
+
+        // 合計が正確に0.01になることを確認
+        expect(sum).toBe(0.01);
+
+        // ほとんどの値が0で、1つだけ0.01になる
+        const nonZeroCount = values.filter((v) => v > 0).length;
+        expect(nonZeroCount).toBeGreaterThan(0);
+      }
     });
   });
 });
