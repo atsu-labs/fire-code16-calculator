@@ -73,8 +73,10 @@ export interface UsageAreaBreakdown {
   annexedName: string;
   exclusiveArea: number;
   floorCommonArea: number; // 階の共用部の案分面積
-  buildingCommonArea: number; // 建物全体の共用部の案分面積
-  usageGroupCommonArea: number; // 特定用途間の共用部の案分面積
+  buildingCommonArea: number; // 建物全体の共用部の案分面積（全階からの合計）
+  buildingCommonByFloor?: Map<string, number>; // 階ごとの建物共用部按分（floorId → 按分面積）
+  usageGroupCommonArea: number; // 特定用途間の共用部の案分面積（全グループからの合計）
+  usageGroupCommonByGroup?: Map<string, number>; // グループごとの按分（groupId → 按分面積）
   totalArea: number; // 総面積
 }
 
@@ -85,6 +87,21 @@ export interface FloorResult {
   floorId: string;
   floorName: string;
   usageBreakdowns: UsageAreaBreakdown[];
+  // 案分前のデータ
+  originalData?: {
+    totalExclusiveArea: number; // 階の専有面積合計
+    floorCommonArea: number; // 階共用部面積（案分前）
+    buildingCommonArea: number; // 建物共用部面積（案分前）
+    usageGroupCommonArea: number; // 用途グループ共用部面積の合計（案分前）
+  };
+  // この階に入力された建物共用部の按分結果（全用途への按分を含む）
+  buildingCommonDistribution?: {
+    usageId: string;
+    annexedCode: string;
+    annexedName: string;
+    floorName: string; // その用途が存在する階名
+    distributedArea: number;
+  }[];
 }
 
 /**

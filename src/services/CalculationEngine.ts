@@ -198,6 +198,7 @@ export class CalculationEngine {
    * @param usages - 全用途の配列
    * @param floorCommonResults - 階共用部按分結果(用途IDをキーとするMap)
    * @param buildingCommonResults - 建物共用部按分結果(用途IDをキーとするMap)
+   * @param buildingCommonByFloor - 階ごとの建物共用部按分(用途IDをキーとし、値は階ID→按分面積のMap)
    * @param usageGroupResults - 用途グループ共用部按分結果(用途IDをキーとするMap)
    * @returns 用途別の面積内訳(UsageAreaBreakdown)の配列
    */
@@ -205,12 +206,36 @@ export class CalculationEngine {
     usages: Usage[],
     floorCommonResults: Map<string, number>,
     buildingCommonResults: Map<string, number>,
-    usageGroupResults: Map<string, number>
+    buildingCommonByFloorOrUsageGroupResults:
+      | Map<string, Map<string, number>>
+      | Map<string, number>,
+    usageGroupResults?: Map<string, number>,
+    usageGroupByGroup?: Map<string, Map<string, number>>
   ): Result<UsageAreaBreakdown[], never> {
+    // 後方互換性のため、古いシグネチャもサポート
+    let buildingCommonByFloor: Map<string, Map<string, number>>;
+    let actualUsageGroupResults: Map<string, number>;
+
+    if (usageGroupResults !== undefined) {
+      // 新しいシグネチャ
+      buildingCommonByFloor = buildingCommonByFloorOrUsageGroupResults as Map<
+        string,
+        Map<string, number>
+      >;
+      actualUsageGroupResults = usageGroupResults;
+    } else {
+      // 古いシグネチャ（テスト用）
+      buildingCommonByFloor = new Map();
+      actualUsageGroupResults = buildingCommonByFloorOrUsageGroupResults as Map<
+        string,
+        number
+      >;
+    }
+
     const breakdowns = usages.map((usage) => {
       const floorCommon = floorCommonResults.get(usage.id) ?? 0;
       const buildingCommon = buildingCommonResults.get(usage.id) ?? 0;
-      const usageGroupCommon = usageGroupResults.get(usage.id) ?? 0;
+      const usageGroupCommon = actualUsageGroupResults.get(usage.id) ?? 0;
 
       const total = this.round(
         usage.exclusiveArea + floorCommon + buildingCommon + usageGroupCommon
@@ -223,7 +248,9 @@ export class CalculationEngine {
         exclusiveArea: this.round(usage.exclusiveArea),
         floorCommonArea: this.round(floorCommon),
         buildingCommonArea: this.round(buildingCommon),
+        buildingCommonByFloor: buildingCommonByFloor.get(usage.id),
         usageGroupCommonArea: this.round(usageGroupCommon),
+        usageGroupCommonByGroup: usageGroupByGroup?.get(usage.id),
         totalArea: total,
       };
 

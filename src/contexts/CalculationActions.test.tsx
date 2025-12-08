@@ -126,9 +126,11 @@ describe('CalculationActions', () => {
       expect(results).not.toBeNull();
       expect(results?.floorResults).toHaveLength(2);
 
-      // 建物全体の共用部は30 + 70 = 100が、専用部分面積比（100:200 = 1:2）で案分される
-      // 1階の１項イ: 100 / 300 * 100 = 33.33
-      // 2階の２項イ: 200 / 300 * 100 = 66.67
+      // 建物共用部は全階の全用途に、個別の専有面積比で按分される
+      // 全専有面積: 100 + 200 = 300
+      // 建物共用部合計: 30 + 70 = 100
+      // 1階のannex01_iへの按分: 100/300 * 100 = 33.33
+      // 2階のannex02_iへの按分: 200/300 * 100 = 66.67
       const floor1Result = results?.floorResults[0];
       const floor2Result = results?.floorResults[1];
 
@@ -195,9 +197,11 @@ describe('CalculationActions', () => {
       expect(results).not.toBeNull();
       expect(results?.floorResults).toHaveLength(2);
 
-      // 建物全体の共用部は100（1階のみ）が、専用部分面積比（100:200 = 1:2）で案分される
-      // 1階の１項イ: 100 / 300 * 100 = 33.33
-      // 2階の２項イ: 200 / 300 * 100 = 66.67
+      // 建物共用部は全階の全用途に、個別の専有面積比で按分される
+      // 全専有面積: 100 + 200 = 300
+      // 建物共用部合計: 100
+      // 1階のannex01_iへの按分: 100/300 * 100 = 33.33
+      // 2階のannex02_iへの按分: 200/300 * 100 = 66.67
       const floor1Result = results?.floorResults[0];
       const floor2Result = results?.floorResults[1];
 

@@ -22,7 +22,25 @@
   font-size: 1.5rem;
 }
 
-.floor-result {
+.results-display h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #0066cc;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #0066cc;
+  padding-bottom: 0.5rem;
+}
+
+.results-display h4 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* マトリックステーブルセクション */
+.matrix-section {
   margin-bottom: 2rem;
   padding: 1rem;
   background-color: white;
@@ -30,64 +48,128 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.floor-result h3 {
-  margin-top: 0;
-  color: #333;
-  font-size: 1.2rem;
-  border-bottom: 2px solid #0066cc;
-  padding-bottom: 0.5rem;
-}
-
-.usage-result {
+.table-wrapper {
+  overflow-x: auto;
   margin-bottom: 1.5rem;
 }
 
-.usage-result:last-child {
-  margin-bottom: 0;
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 600px;
 }
 
-.usage-result h4 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #555;
+.matrix-table th,
+.matrix-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.matrix-table .row-header {
+  background-color: #e6f3ff;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.matrix-table .usage-header {
+  background-color: #0066cc;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 70px;
+}
+
+.matrix-table .total-header {
+  background-color: #ff9800;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 90px;
+}
+
+.matrix-table .data-cell {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+.matrix-table .total-cell {
+  background-color: #fff9e6;
+  font-weight: 500;
+}
+
+.matrix-table .row-total-cell {
+  background-color: #e6f3ff;
+  font-weight: 600;
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  border-left: 2px solid #0066cc;
+}
+
+.matrix-table .grand-total-cell {
+  background-color: #0066cc;
+  color: white;
+  font-weight: 700;
+  text-align: right;
+  font-family: 'Courier New', monospace;
   font-size: 1rem;
 }
 
-.result-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
+.matrix-table .total-row {
+  background-color: #f0f0f0;
+  font-weight: 600;
 }
 
-.result-table th,
-.result-table td {
-  padding: 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.matrix-table .total-row .row-header {
+  background-color: #0066cc;
+  color: white;
 }
 
-.result-table th {
-  font-weight: 500;
-  color: #555;
-  width: 60%;
+.matrix-table .total-row .data-cell {
+  font-weight: 600;
 }
 
-.result-table td {
-  text-align: right;
-  color: #333;
+.matrix-table .total-row .total-cell {
+  background-color: #ffe0b2;
+  font-weight: 600;
 }
 
-.result-table .total-row {
-  font-weight: bold;
-  background-color: #e6f3ff;
+.matrix-table tbody tr:hover {
+  background-color: #f5f5f5;
 }
 
-.result-table .total-row th,
-.result-table .total-row td {
-  border-top: 2px solid #0066cc;
-  border-bottom: 2px solid #0066cc;
+.matrix-table tbody tr:hover .row-header {
+  background-color: #cce5ff;
 }
 
+.matrix-table tbody tr:hover .total-cell {
+  background-color: #ffe0b2;
+}
+
+/* 建物共用部の行 */
+.matrix-table .building-common-row {
+  background-color: #ffe0b2;
+  font-weight: 600;
+}
+
+.matrix-table .building-common-row:hover {
+  background-color: #ffd699;
+}
+
+.matrix-table .building-common-row .row-header {
+  background-color: #ff9800;
+  color: white;
+}
+
+.matrix-table .building-common-row .total-cell {
+  text-align: center;
+  background-color: #ffe0b2;
+}
+
+/* 建物全体の集計 */
 .building-totals {
   margin-top: 2rem;
   padding: 1rem;
@@ -100,6 +182,20 @@
   margin-top: 0;
   color: #f57c00;
   font-size: 1.2rem;
+  border-bottom: none;
+}
+
+.building-totals .result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.building-totals .result-table th,
+.building-totals .result-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 .building-totals .result-table thead th {
@@ -107,11 +203,13 @@
   font-weight: bold;
   padding: 0.75rem;
   text-align: center;
+  border: 1px solid #ddd;
 }
 
 .building-totals .result-table tbody td {
   text-align: right;
   padding: 0.5rem;
+  border: 1px solid #ddd;
 }
 
 .building-totals .result-table tbody td:first-child {
