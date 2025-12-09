@@ -138,13 +138,27 @@ export function useCalculationActions() {
       const floorResultsMap = new Map<string, any[]>();
       
       for (const floor of building.floors) {
-        // 階に用途がないが共用部面積がある場合はエラー
-        if (floor.usages.length === 0 && (floor.floorCommonArea > 0 || floor.buildingCommonArea > 0)) {
+        // 階に用途がないが階共用部面積がある場合はエラー
+        // （建物全体共用部面積のみの場合は許可）
+        if (floor.usages.length === 0 && floor.floorCommonArea > 0) {
           dispatch({ type: 'SET_CALCULATING', payload: false });
           return {
             success: false,
             error: {
               type: 'ZERO_EXCLUSIVE_AREA_SUM',
+              floorId: floor.id,
+            },
+          };
+        }
+
+        // 階に用途が1つしかない場合で階共用部面積がある場合はエラー
+        // （按分する必要がないため）
+        if (floor.usages.length === 1 && floor.floorCommonArea > 0) {
+          dispatch({ type: 'SET_CALCULATING', payload: false });
+          return {
+            success: false,
+            error: {
+              type: 'INVALID_FLOOR_COMMON_AREA',
               floorId: floor.id,
             },
           };

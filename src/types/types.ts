@@ -156,6 +156,7 @@ export type ValidationError =
 export type CalculationError =
   | { type: "ZERO_EXCLUSIVE_AREA_SUM"; floorId?: string; groupId?: string }
   | { type: "INVALID_USAGE_GROUP"; groupId: string }
+  | { type: "INVALID_FLOOR_COMMON_AREA"; floorId: string }
   | { type: "NEGATIVE_VALUE"; field: string };
 
 /**
