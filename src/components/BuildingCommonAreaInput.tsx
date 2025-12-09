@@ -17,7 +17,8 @@ export function BuildingCommonAreaInput({ floorId }: BuildingCommonAreaInputProp
   if (!floor) return null;
 
   const handleBuildingCommonAreaChange = (value: string) => {
-    const area = parseFloat(value);
+    // 空文字列の場合は0にリセット
+    const area = value === '' ? 0 : parseFloat(value);
     if (isNaN(area) || area < 0) return;
     
     dispatch({

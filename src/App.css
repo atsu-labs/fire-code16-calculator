@@ -78,10 +78,26 @@ body {
 
 .floor-title {
   margin: 0 0 0.25rem 0;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
+  font-weight: bold;
   color: #333;
   border-bottom: 2px solid #0066cc;
   padding-bottom: 0.15rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.floor-name {
+  flex-shrink: 0;
+}
+
+.floor-total-area {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #0066cc;
+  white-space: nowrap;
 }
 
 .results-section {
@@ -175,6 +191,10 @@ body {
   .floor-title {
     color: #e0e0e0;
     border-bottom-color: #4d94ff;
+  }
+
+  .floor-total-area {
+    color: #4d94ff;
   }
 }
 

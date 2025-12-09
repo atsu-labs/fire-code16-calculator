@@ -62,7 +62,7 @@ export function UsageManager({ floorId }: UsageManagerProps) {
 
   return (
     <div className="usage-manager">
-      <h3>{floor.name} - 用途管理</h3>
+      <h3>用途管理</h3>
       <div className="usages-list">
         {floor.usages.map((usage) => (
           <div key={usage.id} className="usage-item">

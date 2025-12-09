@@ -28,14 +28,34 @@ function AppContent() {
         <section className="input-section">
           <FloorManager />
           
-          {state.building.floors.map((floor) => (
-            <div key={floor.id} className="floor-section">
-              <h3 className="floor-title">{floor.name}</h3>
-              <UsageManager floorId={floor.id} />
-              <CommonAreaInputs floorId={floor.id} />
-              <UsageGroupSelector floorId={floor.id} />
-            </div>
-          ))}
+          {state.building.floors.map((floor) => {
+            // この階の専用部面積の合計を計算
+            const totalExclusiveArea = floor.usages.reduce(
+              (sum, usage) => sum + usage.exclusiveArea,
+              0
+            );
+            // グループ共用部面積の合計を計算
+            const totalGroupCommonArea = floor.usageGroups.reduce(
+              (sum, group) => sum + group.commonArea,
+              0
+            );
+            // 全ての面積を合計
+            const totalArea = totalExclusiveArea + floor.floorCommonArea + floor.buildingCommonArea + totalGroupCommonArea;
+
+            return (
+              <div key={floor.id} className="floor-section">
+                <h3 className="floor-title">
+                  <span className="floor-name">{floor.name}</span>
+                  <span className="floor-total-area">
+                    合計: {totalArea.toFixed(2)} m²
+                  </span>
+                </h3>
+                <UsageManager floorId={floor.id} />
+                <CommonAreaInputs floorId={floor.id} />
+                <UsageGroupSelector floorId={floor.id} />
+              </div>
+            );
+          })}
         </section>
 
         <section className="results-section">

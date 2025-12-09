@@ -185,20 +185,22 @@ export function UsageGroupSelector({ floorId }: UsageGroupSelectorProps) {
             <div className="existing-groups">
               <h5>この階の既存グループ</h5>
               {currentFloor.usageGroups.map((group) => {
-                // グループ内の用途情報を取得（階名を含む）
-                const groupUsageDetails = group.usageIds
-                  .map((id) => {
-                    const usageWithFloor = allUsages.find((u) => u.id === id);
-                    return usageWithFloor
-                      ? `${usageWithFloor.floorName} - ${usageWithFloor.annexedName}`
-                      : null;
-                  })
-                  .filter(Boolean);
+                // グループ内の用途名を取得（重複なし）
+                const usageNames = Array.from(
+                  new Set(
+                    group.usageIds
+                      .map((id) => {
+                        const usage = allUsages.find((u) => u.id === id);
+                        return usage?.annexedName;
+                      })
+                      .filter(Boolean)
+                  )
+                );
 
                 return (
                   <div key={group.id} className="group-item">
                     <span className="group-usages">
-                      {groupUsageDetails.join(', ')}
+                      {usageNames.join(', ')}
                     </span>
                     <span className="group-area">{group.commonArea.toFixed(2)} m²</span>
                     <button

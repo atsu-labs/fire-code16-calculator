@@ -19,7 +19,8 @@ export function CommonAreaInputs({ floorId }: CommonAreaInputsProps) {
   if (!floor) return null;
 
   const handleFloorCommonAreaChange = async (value: string) => {
-    const area = parseFloat(value);
+    // 空文字列の場合は0にリセット
+    const area = value === '' ? 0 : parseFloat(value);
     if (isNaN(area)) return;
     
     const result = await updateFloor(floorId, { floorCommonArea: area });
@@ -29,7 +30,8 @@ export function CommonAreaInputs({ floorId }: CommonAreaInputsProps) {
   };
 
   const handleBuildingCommonAreaChange = async (value: string) => {
-    const area = parseFloat(value);
+    // 空文字列の場合は0にリセット
+    const area = value === '' ? 0 : parseFloat(value);
     if (isNaN(area)) return;
     
     const result = await updateFloor(floorId, { buildingCommonArea: area });
