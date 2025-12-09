@@ -12,5 +12,9 @@ watch_paths = ["src/**/*"]
 [build.upload]
 format = "service-worker"
 
+# ← ここに追加（13行目）
+[assets]
+directory = "./dist"
+
 # 本番環境の設定
 [env.production]
