@@ -13,7 +13,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "pages:dev": "wrangler pages dev dist",
+    "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=fire-code16-calculator"
   },
   "dependencies": {
     "react": "^19.2.0",

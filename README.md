@@ -62,6 +62,61 @@ npm run test:ui
 npm run test:coverage
 ```
 
+## デプロイ
+
+### Cloudflare Pages へのデプロイ
+
+このプロジェクトは Cloudflare Pages にデプロイできます。
+
+#### 自動デプロイ (GitHub Actions)
+
+`main` ブランチへのプッシュ時に自動的にデプロイされます。初回セットアップには以下の手順が必要です：
+
+1. Cloudflare ダッシュボードで API トークンを作成
+   - [Cloudflare Dashboard](https://dash.cloudflare.com/profile/api-tokens) にアクセス
+   - "Create Token" をクリック
+   - "Edit Cloudflare Workers" テンプレートを選択、または以下の権限を持つカスタムトークンを作成：
+     - Account - Cloudflare Pages: Edit
+
+2. GitHub リポジトリの Secrets を設定
+   - リポジトリの Settings > Secrets and variables > Actions へ移動
+   - 以下のシークレットを追加：
+     - `CLOUDFLARE_API_TOKEN`: 上記で作成した API トークン
+     - `CLOUDFLARE_ACCOUNT_ID`: Cloudflare アカウント ID（ダッシュボードの URL から取得可能）
+
+3. コミットして `main` ブランチにプッシュ
+   ```bash
+   git add .
+   git commit -m "feat: Cloudflare Pages デプロイ設定を追加"
+   git push origin main
+   ```
+
+#### 手動デプロイ (Wrangler CLI)
+
+```bash
+# Wrangler CLI のインストール
+npm install -g wrangler
+
+# Cloudflare にログイン
+wrangler login
+
+# ビルド
+npm run build
+
+# デプロイ
+wrangler pages deploy dist --project-name=fire-code16-calculator
+```
+
+#### ローカルプレビュー
+
+```bash
+# ビルド
+npm run build
+
+# Cloudflare Pages のローカルプレビュー
+wrangler pages dev dist
+```
+
 ## プロジェクト構成
 
 ```

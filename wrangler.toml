@@ -1,0 +1,16 @@
+# Cloudflare Pages の設定ファイル
+name = "fire-code16-calculator"
+compatibility_date = "2025-12-09"
+
+# Pages のビルド設定
+[build]
+command = "npm run build"
+# Vite のデフォルトビルド出力ディレクトリ
+cwd = "."
+watch_paths = ["src/**/*"]
+
+[build.upload]
+format = "service-worker"
+
+# 本番環境の設定
+[env.production]
