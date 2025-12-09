@@ -3,11 +3,11 @@
  */
 
 .results-display {
-  margin: 2rem 0;
-  padding: 1.5rem;
+  margin: 0.2rem 0;
+  padding: 0.6rem;
   background-color: #f0f8ff;
   border: 2px solid #0066cc;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .results-display.empty {
@@ -18,51 +18,56 @@
 
 .results-display h2 {
   margin-top: 0;
+  margin-bottom: 0.4rem;
   color: #0066cc;
-  font-size: 1.5rem;
+  font-size: 1.05rem;
+  line-height: 1.1;
 }
 
 .results-display h3 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.3rem;
   color: #0066cc;
-  font-size: 1.3rem;
+  font-size: 0.9rem;
+  line-height: 1.1;
   border-bottom: 2px solid #0066cc;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.2rem;
 }
 
 .results-display h4 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.3rem;
   color: #333;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.1;
   font-weight: 600;
 }
 
 /* マトリックステーブルセクション */
 .matrix-section {
-  margin-bottom: 2rem;
-  padding: 1rem;
+  margin-bottom: 0.6rem;
+  padding: 0.4rem;
   background-color: white;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .table-wrapper {
   overflow-x: auto;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .matrix-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   min-width: 600px;
+  line-height: 1.1;
 }
 
 .matrix-table th,
 .matrix-table td {
-  padding: 0.5rem;
+  padding: 0.2rem 0.25rem;
   text-align: center;
   border: 1px solid #ddd;
 }
@@ -171,8 +176,8 @@
 
 /* 建物全体の集計 */
 .building-totals {
-  margin-top: 2rem;
-  padding: 1rem;
+  margin-top: 0.8rem;
+  padding: 0.5rem;
   background-color: #fff9e6;
   border: 2px solid #ff9800;
   border-radius: 4px;
@@ -180,20 +185,23 @@
 
 .building-totals h3 {
   margin-top: 0;
+  margin-bottom: 0.4rem;
   color: #f57c00;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
+  line-height: 1.1;
   border-bottom: none;
 }
 
 .building-totals .result-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
 }
 
 .building-totals .result-table th,
 .building-totals .result-table td {
-  padding: 0.5rem;
+  padding: 0.3rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
@@ -201,14 +209,14 @@
 .building-totals .result-table thead th {
   background-color: #ffe0b2;
   font-weight: bold;
-  padding: 0.75rem;
+  padding: 0.4rem 0.3rem;
   text-align: center;
   border: 1px solid #ddd;
 }
 
 .building-totals .result-table tbody td {
   text-align: right;
-  padding: 0.5rem;
+  padding: 0.3rem;
   border: 1px solid #ddd;
 }
 
@@ -228,6 +236,6 @@
 }
 
 .grand-total-row td {
-  padding: 0.75rem !important;
+  padding: 0.4rem 0.3rem !important;
   border-top: 3px solid #f57c00 !important;
 }

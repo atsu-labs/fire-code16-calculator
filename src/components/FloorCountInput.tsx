@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { ValidationService } from '../services';
+import '../styles/FloorCountInput.css';
 
 /**
  * FloorCountInputコンポーネントのProps
