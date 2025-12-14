@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 // @ts-expect-error - jest-axe does not have TypeScript types
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { toHaveNoViolations } from 'jest-axe';
 import App from './App';
 
 expect.extend(toHaveNoViolations);

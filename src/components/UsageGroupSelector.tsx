@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import { useUsageGroupActions } from '../contexts/UsageGroupActions';
 import '../styles/UsageGroupSelector.css';
 

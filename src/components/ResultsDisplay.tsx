@@ -3,7 +3,7 @@
  * 計算結果の表示
  */
 
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import '../styles/ResultsDisplay.css';
 import type { UsageAreaBreakdown } from '../types';
 

@@ -3,7 +3,7 @@
  * 用途の追加・編集・削除を管理する
  */
 
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import { useUsageActions } from '../contexts/UsageActions';
 import { buildingUses } from '../types';
 import '../styles/UsageManager.css';

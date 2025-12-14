@@ -3,7 +3,7 @@
  * 階共用部の面積入力
  */
 
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import { useFloorActions } from '../contexts/FloorActions';
 import '../styles/CommonAreaInputs.css';
 

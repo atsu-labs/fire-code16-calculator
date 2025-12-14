@@ -17,6 +17,7 @@ import App from '../App';
 
 describe.skip('FloorCountInput パフォーマンステスト - Task 7.3', () => {
   let confirmSpy: ReturnType<typeof vi.spyOn>;
+  type PerfWithMemory = { memory?: { usedJSHeapSize?: number } };
 
   beforeEach(() => {
     // window.confirmをスパイ（確認ダイアログをスキップ）
@@ -267,7 +268,7 @@ describe.skip('FloorCountInput パフォーマンステスト - Task 7.3', () =>
       const aboveGroundInput = screen.getByLabelText('地上階数');
 
       // メモリ使用量の基準値を取得（performance.memoryがサポートされている場合）
-      const initialMemory = (performance as any).memory?.usedJSHeapSize;
+  const initialMemory = (performance as unknown as PerfWithMemory).memory?.usedJSHeapSize ?? 0;
 
       // 100階を生成
       fireEvent.change(aboveGroundInput, { target: { value: '100' } });
@@ -291,9 +292,9 @@ describe.skip('FloorCountInput パフォーマンステスト - Task 7.3', () =>
       }, { timeout: 30000 });
 
       // メモリ使用量を確認（performance.memoryが利用可能な環境のみ）
-      if ((performance as any).memory) {
-        const finalMemory = (performance as any).memory.usedJSHeapSize;
-        const memoryIncrease = finalMemory - initialMemory;
+      if ((performance as unknown as PerfWithMemory).memory) {
+  const finalMemory = (performance as unknown as PerfWithMemory).memory!.usedJSHeapSize ?? 0;
+  const memoryIncrease = finalMemory - initialMemory;
 
         console.log(`✓ メモリ増加量: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
 

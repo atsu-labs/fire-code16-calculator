@@ -3,6 +3,8 @@
  * React Context API + useReducer を使用した状態管理
  */
 
+/* eslint-disable react-refresh/only-export-components */
+
 import React, { createContext, useContext, useReducer, type ReactNode } from 'react';
 import {
   type Building,
@@ -11,8 +13,8 @@ import {
   type UsageGroup,
   type CalculationResults,
   type ValidationError,
-  generateUUID,
 } from '../types';
+import { createInitialState } from './appStateHelpers';
 
 // ============================================================================
 // State Types
@@ -55,36 +57,7 @@ export type AppAction =
 // Initial State
 // ============================================================================
 
-/**
- * 初期階を作成
- */
-function createInitialFloor(): Floor {
-  return {
-    id: generateUUID(),
-    name: '1階',
-    floorCommonArea: 0,
-    buildingCommonArea: 0,
-    usages: [],
-    usageGroups: [],
-  };
-}
-
-/**
- * 初期状態を作成
- */
-function createInitialState(): AppState {
-  return {
-    building: {
-      id: generateUUID(),
-      floors: [createInitialFloor()],
-    },
-    calculationResults: null,
-    uiState: {
-      isCalculating: false,
-      errors: [],
-    },
-  };
-}
+// 初期状態は appStateHelpers の createInitialState を使用
 
 // ============================================================================
 // Reducer
@@ -297,12 +270,11 @@ function appStateReducer(state: AppState, action: AppAction): AppState {
 // Context
 // ============================================================================
 
-interface AppStateContextValue {
+export interface AppStateContextValue {
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
 }
-
-const AppStateContext = createContext<AppStateContextValue | undefined>(undefined);
+export const AppStateContext = createContext<AppStateContextValue | undefined>(undefined);
 
 // ============================================================================
 // Provider
@@ -344,96 +316,4 @@ export function useAppState(): AppStateContextValue {
 // ============================================================================
 // Helper Functions (不変更新ヘルパー)
 // ============================================================================
-
-/**
- * updateBuildingHelper - 建物データの不変更新ヘルパー
- */
-export function updateBuildingHelper(
-  building: Building,
-  updates: Partial<Building>
-): Building {
-  return {
-    ...building,
-    ...updates,
-  };
-}
-
-/**
- * updateFloorHelper - 階データの不変更新ヘルパー
- */
-export function updateFloorHelper(
-  floors: Floor[],
-  floorId: string,
-  updates: Partial<Floor>
-): Floor[] {
-  return floors.map((floor) => (floor.id === floorId ? { ...floor, ...updates } : floor));
-}
-
-/**
- * updateUsageHelper - 用途データの不変更新ヘルパー
- */
-export function updateUsageHelper(
-  usages: Usage[],
-  usageId: string,
-  updates: Partial<Usage>
-): Usage[] {
-  return usages.map((usage) => (usage.id === usageId ? { ...usage, ...updates } : usage));
-}
-
-/**
- * addFloorHelper - 階を追加する不変更新ヘルパー
- */
-export function addFloorHelper(floors: Floor[]): Floor[] {
-  return [...floors, createInitialFloor()];
-}
-
-/**
- * deleteFloorHelper - 階を削除する不変更新ヘルパー
- */
-export function deleteFloorHelper(floors: Floor[], floorId: string): Floor[] {
-  return floors.filter((floor) => floor.id !== floorId);
-}
-
-/**
- * addUsageHelper - 用途を追加する不変更新ヘルパー
- */
-export function addUsageHelper(usages: Usage[], usage: Usage): Usage[] {
-  return [...usages, usage];
-}
-
-/**
- * deleteUsageHelper - 用途を削除する不変更新ヘルパー
- */
-export function deleteUsageHelper(usages: Usage[], usageId: string): Usage[] {
-  return usages.filter((usage) => usage.id !== usageId);
-}
-
-/**
- * addUsageGroupHelper - 用途グループを追加する不変更新ヘルパー
- */
-export function addUsageGroupHelper(
-  usageGroups: UsageGroup[],
-  usageGroup: UsageGroup
-): UsageGroup[] {
-  return [...usageGroups, usageGroup];
-}
-
-/**
- * deleteUsageGroupHelper - 用途グループを削除する不変更新ヘルパー
- */
-export function deleteUsageGroupHelper(
-  usageGroups: UsageGroup[],
-  groupId: string
-): UsageGroup[] {
-  return usageGroups.filter((group) => group.id !== groupId);
-}
-
-/**
- * deleteUsageGroupsContainingUsageHelper - 特定の用途を含む用途グループを削除する
- */
-export function deleteUsageGroupsContainingUsageHelper(
-  usageGroups: UsageGroup[],
-  usageId: string
-): UsageGroup[] {
-  return usageGroups.filter((group) => !group.usageIds.includes(usageId));
-}
+// ヘルパー関数は `src/contexts/appStateHelpers.ts` に移動しました

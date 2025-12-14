@@ -4,7 +4,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { AppStateProvider, useAppState } from './AppStateContext';
+import { AppStateProvider } from './AppStateContext';
+import { useAppState } from './useAppState';
 import { useFloorActions } from './FloorActions';
 
 describe('FloorActions', () => {

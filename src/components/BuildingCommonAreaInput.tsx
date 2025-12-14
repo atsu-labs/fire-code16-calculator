@@ -3,7 +3,7 @@
  * 建物全体の共用部面積入力（各階ごと）
  */
 
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import '../styles/BuildingCommonAreaInput.css';
 
 interface BuildingCommonAreaInputProps {

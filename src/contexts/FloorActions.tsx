@@ -3,7 +3,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAppState } from './AppStateContext';
+import { useAppState } from './useAppState';
 import { type Floor, type ValidationError, type Result, generateUUID } from '../types';
 import { ValidationService } from '../services/ValidationService';
 import { generateFloors } from '../utils/floorGenerator';

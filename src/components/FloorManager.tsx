@@ -6,7 +6,7 @@
  */
 
 import { useMemo, useCallback } from 'react';
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import { useFloorActions } from '../contexts/FloorActions';
 import { FloorCountInput } from './FloorCountInput';
 import type { Floor } from '../types';

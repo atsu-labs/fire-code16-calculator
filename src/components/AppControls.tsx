@@ -3,7 +3,7 @@
  * 計算実行とクリアボタン
  */
 
-import { useAppState } from '../contexts/AppStateContext';
+import { useAppState } from '../contexts/useAppState';
 import { useCalculationActions } from '../contexts/CalculationActions';
 import '../styles/AppControls.css';
 
