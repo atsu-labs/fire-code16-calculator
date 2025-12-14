@@ -43,6 +43,22 @@
   font-weight: 600;
 }
 
+/* 計算実行を促すメッセージ */
+.calculation-prompt {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.calculation-prompt p {
+  margin: 0;
+  color: #856404;
+  font-weight: 500;
+}
+
 /* マトリックステーブルセクション */
 .matrix-section {
   margin-bottom: 0.6rem;

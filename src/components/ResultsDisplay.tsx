@@ -10,10 +10,172 @@ import type { UsageAreaBreakdown } from '../types';
 export function ResultsDisplay() {
   const { state } = useAppState();
 
+  // 入力データから案分前の面積マトリックスを生成
+  const renderInputMatrix = () => {
+    const { floors } = state.building;
+
+    if (floors.length === 0) {
+      return (
+        <div className="results-display empty">
+          <p>階と用途を入力してください</p>
+        </div>
+      );
+    }
+
+    // 全用途コードを収集（重複なし、ソート済み）
+    const allUsageCodes = Array.from(
+      new Set(
+        floors.flatMap((floor) =>
+          floor.usages.map((usage) => usage.annexedCode)
+        )
+      )
+    ).sort();
+
+    // 用途コードから用途名を取得するマップ
+    const usageCodeToName = new Map<string, string>();
+    floors.forEach((floor) => {
+      floor.usages.forEach((usage) => {
+        usageCodeToName.set(usage.annexedCode, usage.annexedName);
+      });
+    });
+
+    // 階と用途コードから専有面積を取得（同じ用途コードが複数ある場合は合計）
+    const getExclusiveArea = (floorId: string, usageCode: string): number => {
+      const floor = floors.find((f) => f.id === floorId);
+      if (!floor) return 0;
+      
+      const usages = floor.usages.filter((u) => u.annexedCode === usageCode);
+      return usages.reduce((sum, u) => sum + u.exclusiveArea, 0);
+    };
+
+    // 用途ごとの専有面積合計を計算
+    const usageTotals = new Map<string, number>();
+    allUsageCodes.forEach((code) => {
+      const total = floors.reduce((sum, floor) => {
+        return sum + getExclusiveArea(floor.id, code);
+      }, 0);
+      usageTotals.set(code, total);
+    });
+
+    // 各共用部の合計を計算
+    const totalFloorCommon = floors.reduce(
+      (sum, floor) => sum + floor.floorCommonArea,
+      0
+    );
+    const totalBuildingCommon = floors.reduce(
+      (sum, floor) => sum + floor.buildingCommonArea,
+      0
+    );
+    const totalGroupCommon = floors.reduce(
+      (sum, floor) => sum + floor.usageGroups.reduce((s, g) => s + g.commonArea, 0),
+      0
+    );
+
+    // 全専有面積の合計
+    const grandTotalExclusive = Array.from(usageTotals.values()).reduce((sum, val) => sum + val, 0);
+
+    return (
+      <div className="matrix-section">
+        <h3>案分前の面積（入力値）</h3>
+        <div className="table-wrapper">
+          <table className="matrix-table">
+            <thead>
+              <tr>
+                <th className="row-header">階</th>
+                {allUsageCodes.map((code) => (
+                  <th key={code} className="usage-header">
+                    {usageCodeToName.get(code)}
+                  </th>
+                ))}
+                <th className="total-header">階共用部</th>
+                <th className="total-header">建物共用部</th>
+                <th className="total-header">グループ共用部</th>
+                <th className="total-header">階の合計</th>
+              </tr>
+            </thead>
+            <tbody>
+              {floors.map((floor) => {
+                // 各階の専有面積合計
+                const floorExclusiveTotal = allUsageCodes.reduce((sum, code) => {
+                  return sum + getExclusiveArea(floor.id, code);
+                }, 0);
+                
+                // グループ共用部の合計
+                const floorGroupCommonTotal = floor.usageGroups.reduce(
+                  (sum, group) => sum + group.commonArea,
+                  0
+                );
+                
+                // 階の合計
+                const floorTotal = 
+                  floorExclusiveTotal +
+                  floor.floorCommonArea +
+                  floor.buildingCommonArea +
+                  floorGroupCommonTotal;
+
+                return (
+                  <tr key={floor.id}>
+                    <td className="row-header">{floor.name}</td>
+                    {allUsageCodes.map((code) => {
+                      const area = getExclusiveArea(floor.id, code);
+                      return (
+                        <td key={code} className="data-cell">
+                          {area > 0 ? area.toFixed(2) : '-'}
+                        </td>
+                      );
+                    })}
+                    <td className="total-cell">
+                      {floor.floorCommonArea.toFixed(2)}
+                    </td>
+                    <td className="total-cell">
+                      {floor.buildingCommonArea.toFixed(2)}
+                    </td>
+                    <td className="total-cell">
+                      {floorGroupCommonTotal.toFixed(2)}
+                    </td>
+                    <td className="row-total-cell">
+                      <strong>{floorTotal.toFixed(2)}</strong>
+                    </td>
+                  </tr>
+                );
+              })}
+              {/* 合計行 */}
+              <tr className="total-row">
+                <td className="row-header"><strong>合計</strong></td>
+                {allUsageCodes.map((code) => (
+                  <td key={code} className="data-cell total-cell">
+                    <strong>{usageTotals.get(code)?.toFixed(2) || '0.00'}</strong>
+                  </td>
+                ))}
+                <td className="total-cell">
+                  <strong>{totalFloorCommon.toFixed(2)}</strong>
+                </td>
+                <td className="total-cell">
+                  <strong>{totalBuildingCommon.toFixed(2)}</strong>
+                </td>
+                <td className="total-cell">
+                  <strong>{totalGroupCommon.toFixed(2)}</strong>
+                </td>
+                <td className="grand-total-cell">
+                  <strong>{(grandTotalExclusive + totalFloorCommon + totalBuildingCommon + totalGroupCommon).toFixed(2)}</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // 計算結果がない場合は入力マトリックスのみ表示
   if (!state.calculationResults || state.calculationResults.floorResults.length === 0) {
     return (
-      <div className="results-display empty">
-        <p>計算を実行すると結果が表示されます</p>
+      <div className="results-display">
+        <h2>入力状況</h2>
+        {renderInputMatrix()}
+        <div className="calculation-prompt">
+          <p>「計算実行」ボタンを押すと按分後の結果が表示されます</p>
+        </div>
       </div>
     );
   }
@@ -92,91 +254,8 @@ export function ResultsDisplay() {
     <div className="results-display">
       <h2>計算結果</h2>
 
-      {/* 案分前マトリックス */}
-      <div className="matrix-section">
-        <h3>案分前の面積（入力値）</h3>
-        <div className="table-wrapper">
-          <table className="matrix-table">
-            <thead>
-              <tr>
-                <th className="row-header">階</th>
-                {allUsageCodes.map((code) => (
-                  <th key={code} className="usage-header">
-                    {usageCodeToName.get(code)}
-                  </th>
-                ))}
-                <th className="total-header">階共用部</th>
-                <th className="total-header">建物共用部</th>
-                <th className="total-header">グループ共用部</th>
-                <th className="total-header">階の合計</th>
-              </tr>
-            </thead>
-            <tbody>
-              {floorResults.map((floor) => {
-                // 各階の専有面積合計
-                const floorExclusiveTotal = allUsageCodes.reduce((sum, code) => {
-                  const breakdown = getBreakdown(floor.floorId, code);
-                  return sum + (breakdown ? breakdown.exclusiveArea : 0);
-                }, 0);
-                
-                // 階の合計
-                const floorTotal = 
-                  floorExclusiveTotal +
-                  (floor.originalData?.floorCommonArea || 0) +
-                  (floor.originalData?.buildingCommonArea || 0) +
-                  (floor.originalData?.usageGroupCommonArea || 0);
-
-                return (
-                  <tr key={floor.floorId}>
-                    <td className="row-header">{floor.floorName}</td>
-                    {allUsageCodes.map((code) => {
-                      const breakdown = getBreakdown(floor.floorId, code);
-                      return (
-                        <td key={code} className="data-cell">
-                          {breakdown ? breakdown.exclusiveArea.toFixed(2) : '-'}
-                        </td>
-                      );
-                    })}
-                    <td className="total-cell">
-                      {floor.originalData?.floorCommonArea.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="total-cell">
-                      {floor.originalData?.buildingCommonArea.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="total-cell">
-                      {floor.originalData?.usageGroupCommonArea.toFixed(2) || '0.00'}
-                    </td>
-                    <td className="row-total-cell">
-                      <strong>{floorTotal.toFixed(2)}</strong>
-                    </td>
-                  </tr>
-                );
-              })}
-              {/* 合計行 */}
-              <tr className="total-row">
-                <td className="row-header"><strong>合計</strong></td>
-                {allUsageCodes.map((code) => (
-                  <td key={code} className="data-cell total-cell">
-                    <strong>{usageTotals.get(code)?.toFixed(2) || '0.00'}</strong>
-                  </td>
-                ))}
-                <td className="total-cell">
-                  <strong>{totalFloorCommon.toFixed(2)}</strong>
-                </td>
-                <td className="total-cell">
-                  <strong>{totalBuildingCommon.toFixed(2)}</strong>
-                </td>
-                <td className="total-cell">
-                  <strong>{totalGroupCommon.toFixed(2)}</strong>
-                </td>
-                <td className="grand-total-cell">
-                  <strong>{(grandTotalExclusive + totalFloorCommon + totalBuildingCommon + totalGroupCommon).toFixed(2)}</strong>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* 案分前マトリックス（入力データから直接表示） */}
+      {renderInputMatrix()}
 
       {/* 案分後の合計面積（階別×用途別） */}
       <div className="matrix-section">
