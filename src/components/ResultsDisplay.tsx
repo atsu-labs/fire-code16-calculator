@@ -18,7 +18,7 @@ export function ResultsDisplay() {
     );
   }
 
-  const { floorResults, buildingTotal } = state.calculationResults;
+  const { floorResults, buildingTotal, distributionTrace } = state.calculationResults;
 
   // 全用途コードを収集（重複なし、ソート済み）
   const allUsageCodes = Array.from(
@@ -37,11 +37,28 @@ export function ResultsDisplay() {
     });
   });
 
-  // 階と用途コードから内訳を取得するヘルパー
+  // 階と用途コードから内訳を取得するヘルパー（同じ用途コードが複数ある場合は合計）
   const getBreakdown = (floorId: string, usageCode: string): UsageAreaBreakdown | null => {
     const floor = floorResults.find((f) => f.floorId === floorId);
     if (!floor) return null;
-    return floor.usageBreakdowns.find((b) => b.annexedCode === usageCode) || null;
+    
+    // 同じ用途コードの全ての内訳を取得
+    const breakdowns = floor.usageBreakdowns.filter((b) => b.annexedCode === usageCode);
+    if (breakdowns.length === 0) return null;
+    if (breakdowns.length === 1) return breakdowns[0];
+    
+    // 複数ある場合は合計
+    const combined: UsageAreaBreakdown = {
+      usageId: breakdowns[0].usageId,
+      annexedCode: usageCode,
+      annexedName: breakdowns[0].annexedName,
+      exclusiveArea: breakdowns.reduce((sum, b) => sum + b.exclusiveArea, 0),
+      floorCommonArea: breakdowns.reduce((sum, b) => sum + b.floorCommonArea, 0),
+      buildingCommonArea: breakdowns.reduce((sum, b) => sum + b.buildingCommonArea, 0),
+      usageGroupCommonArea: breakdowns.reduce((sum, b) => sum + b.usageGroupCommonArea, 0),
+      totalArea: breakdowns.reduce((sum, b) => sum + b.totalArea, 0),
+    };
+    return combined;
   };
 
   // 用途ごとの専有面積合計を計算
@@ -165,7 +182,7 @@ export function ResultsDisplay() {
       <div className="matrix-section">
         <h3>案分後の合計面積（階別×用途別）</h3>
         <p style={{ fontSize: '0.9em', color: '#666', marginTop: '0.5em', marginBottom: '1em' }}>
-          ※各セルの値 = 専有面積 + 階共用部按分 + 建物共用部按分（その階から） + グループ共用部按分（全グループから）
+          ※各セルの値 = 専有面積 + 階共用部按分 + 建物共用部按分（全階から） + グループ共用部按分（全グループから）
         </p>
         <div className="table-wrapper">
           <table className="matrix-table">
@@ -182,71 +199,24 @@ export function ResultsDisplay() {
             </thead>
             <tbody>
               {floorResults.map((floor) => {
-                // 階の合計 = 案分前の入力値の合計
-                // （専有面積 + 階共用部 + 建物共用部 + グループ共用部）
-                const floorTotalAfterDistribution = 
-                  (floor.originalData?.totalExclusiveArea || 0) +
-                  (floor.originalData?.floorCommonArea || 0) +
-                  (floor.originalData?.buildingCommonArea || 0) +
-                  (floor.originalData?.usageGroupCommonArea || 0);
+                // 階の合計 = この階の各用途の totalArea の合計
+                const floorTotalAfterDistribution = allUsageCodes.reduce((sum, code) => {
+                  const breakdown = getBreakdown(floor.floorId, code);
+                  return sum + (breakdown ? breakdown.totalArea : 0);
+                }, 0);
 
                 return (
                   <tr key={floor.floorId}>
                     <td className="row-header">{floor.floorName}</td>
                     {allUsageCodes.map((code) => {
                       const breakdown = getBreakdown(floor.floorId, code);
-                      if (breakdown && breakdown.buildingCommonByFloor) {
-                        // この階の用途の合計 = 専有 + 階共用 + この階からの建物共用按分 + グループ共用按分（全グループから）
-                        const buildingCommonFromThisFloor = breakdown.buildingCommonByFloor.get(floor.floorId) || 0;
-                        
-                        const totalForThisFloor = 
-                          breakdown.exclusiveArea +
-                          breakdown.floorCommonArea +
-                          buildingCommonFromThisFloor +
-                          breakdown.usageGroupCommonArea;
+                      if (breakdown) {
                         return (
                           <td key={code} className="data-cell total-cell">
-                            <strong>{totalForThisFloor.toFixed(2)}</strong>
-                          </td>
-                        );
-                      } else if (breakdown) {
-                        // buildingCommonByFloorがない場合（その階に建物共用部がない）
-                        const totalForThisFloor = 
-                          breakdown.exclusiveArea +
-                          breakdown.floorCommonArea +
-                          breakdown.usageGroupCommonArea;
-                        return (
-                          <td key={code} className="data-cell total-cell">
-                            <strong>{totalForThisFloor.toFixed(2)}</strong>
+                            <strong>{breakdown.totalArea.toFixed(2)}</strong>
                           </td>
                         );
                       }
-                      
-                      // その階にその用途が存在しない場合
-                      // でも、他の階の建物共用部やグループ共用部から按分を受けている可能性がある
-                      const allBreakdowns = floorResults.flatMap(f => f.usageBreakdowns);
-                      const usageBreakdown = allBreakdowns.find(b => b.annexedCode === code);
-                      
-                      let totalFromOtherSources = 0;
-                      
-                      // 建物共用部: この階から他の用途への按分
-                      if (usageBreakdown && usageBreakdown.buildingCommonByFloor) {
-                        const buildingCommonFromThisFloor = usageBreakdown.buildingCommonByFloor.get(floor.floorId) || 0;
-                        totalFromOtherSources += buildingCommonFromThisFloor;
-                      }
-                      
-                      // グループ共用部: 全グループからの按分（この階にその用途がなくても受け取る可能性がある）
-                      // 実際にはその階にその用途がない場合、グループ共用部も受け取らないはず
-                      // （グループ共用部は用途が存在する階で計上される）
-                      
-                      if (totalFromOtherSources > 0) {
-                        return (
-                          <td key={code} className="data-cell total-cell">
-                            <strong>{totalFromOtherSources.toFixed(2)}</strong>
-                          </td>
-                        );
-                      }
-                      
                       return (
                         <td key={code} className="data-cell total-cell">
                           -
@@ -296,6 +266,119 @@ export function ResultsDisplay() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* 按分経過表 */}
+      {distributionTrace && (
+        <>
+          {/* 建物共用部の按分経過 */}
+          {distributionTrace.buildingCommonTraces.length > 0 && (
+            <div className="distribution-trace">
+              <h3>建物共用部の按分経過</h3>
+              {distributionTrace.buildingCommonTraces.map((trace) => {
+                // 用途コード（annexedCode）ごとにグループ化して合計を計算
+                const usageGroups = new Map<string, {
+                  annexedCode: string;
+                  annexedName: string;
+                  totalDistributed: number;
+                }>();
+
+                trace.distributions.forEach((dist) => {
+                  const key = dist.annexedCode; // annexedCodeでグループ化
+                  if (!usageGroups.has(key)) {
+                    usageGroups.set(key, {
+                      annexedCode: dist.annexedCode,
+                      annexedName: dist.annexedName,
+                      totalDistributed: 0,
+                    });
+                  }
+                  const group = usageGroups.get(key)!;
+                  group.totalDistributed += dist.distributedArea;
+                });
+
+                return (
+                  <div key={trace.sourceFloorId} className="trace-section">
+                    <h4>{trace.sourceFloorName}の建物共用部 {trace.totalArea.toFixed(2)} m²</h4>
+                    <table className="result-table">
+                      <thead>
+                        <tr>
+                          <th>用途</th>
+                          <th>按分面積</th>
+                          <th>按分比率</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from(usageGroups.values())
+                          .sort((a, b) => a.annexedCode.localeCompare(b.annexedCode))
+                          .map((group) => (
+                            <tr key={group.annexedCode}>
+                              <td>{group.annexedName}</td>
+                              <td>{group.totalDistributed.toFixed(2)} m²</td>
+                              <td>{((group.totalDistributed / trace.totalArea) * 100).toFixed(2)}%</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* グループ共用部の按分経過 */}
+          {distributionTrace.usageGroupTraces.length > 0 && (
+            <div className="distribution-trace">
+              <h3>グループ共用部の按分経過</h3>
+              {distributionTrace.usageGroupTraces.map((trace) => {
+                // 用途コード（annexedCode）ごとにグループ化して合計を計算
+                const usageGroups = new Map<string, {
+                  annexedCode: string;
+                  annexedName: string;
+                  totalDistributed: number;
+                }>();
+
+                trace.distributions.forEach((dist) => {
+                  const key = dist.annexedCode; // annexedCodeでグループ化
+                  if (!usageGroups.has(key)) {
+                    usageGroups.set(key, {
+                      annexedCode: dist.annexedCode,
+                      annexedName: dist.annexedName,
+                      totalDistributed: 0,
+                    });
+                  }
+                  const group = usageGroups.get(key)!;
+                  group.totalDistributed += dist.distributedArea;
+                });
+
+                return (
+                  <div key={trace.groupId} className="trace-section">
+                    <h4>{trace.groupFloorName}のグループ共用部 {trace.totalArea.toFixed(2)} m²</h4>
+                    <table className="result-table">
+                      <thead>
+                        <tr>
+                          <th>用途</th>
+                          <th>按分面積</th>
+                          <th>按分比率</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from(usageGroups.values())
+                          .sort((a, b) => a.annexedCode.localeCompare(b.annexedCode))
+                          .map((group) => (
+                            <tr key={group.annexedCode}>
+                              <td>{group.annexedName}</td>
+                              <td>{group.totalDistributed.toFixed(2)} m²</td>
+                              <td>{((group.totalDistributed / trace.totalArea) * 100).toFixed(2)}%</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -1,5 +1,33 @@
 /**
  * CalculationActions - 計算実行とクリア機能
+ * 
+ * ## 共用部按分の基本仕様
+ * 
+ * ### 1. 階共用部
+ * - その階の用途のみに按分
+ * - 用途の専有面積比で按分
+ * 
+ * ### 2. 建物共用部（重要）
+ * - **全建物の全用途コードに按分**（用途コードの専有面積合計比で按分）
+ * - **按分された面積は、建物共用部が存在する階にのみ加算**
+ * - 例：2階に建物共用部100㎡がある場合
+ *   - 全建物の用途コード（四項、五項ロ）の専有面積比で按分
+ *   - 按分された面積は**2階にのみ**加算される
+ *   - その用途コードが2階に存在しない場合は、仮想用途として2階に作成して加算
+ * 
+ * ### 3. グループ共用部（重要）
+ * - **グループ内の用途コードに按分**（用途コードの専有面積合計比で按分）
+ * - **按分された面積は、グループが存在する階にのみ加算**
+ * - 例：1階にグループ共用部100㎡がある場合
+ *   - グループ内の用途コード（二項ロ、四項）の専有面積比で按分
+ *   - 按分された面積は**1階にのみ**加算される
+ *   - その用途コードが1階に存在しない場合は、仮想用途として1階に作成して加算
+ * 
+ * ### 仮想用途の作成
+ * 共用部按分により、その階に実際には存在しない用途コードに按分が発生した場合：
+ * - 専有面積0の仮想用途エントリを作成
+ * - 按分された共用部面積のみを持つ
+ * - 結果表示では実際の用途と同様に表示される
  */
 
 import { useCallback } from 'react';
@@ -17,6 +45,15 @@ export function useCalculationActions() {
 
   /**
    * executeCalculation - 面積計算を実行
+   * 
+   * 計算の流れ：
+   * 1. 全建物の用途コード別専有面積合計を計算
+   * 2. 建物共用部を用途コード別に按分（階ごとに記録）
+   * 3. グループ共用部を用途コード別に按分（階ごとに記録）
+   * 4. 各階ごとに：
+   *    a. 階共用部を按分
+   *    b. その階に存在する用途コード（実用途+仮想用途）を収集
+   *    c. 各用途コードの内訳を計算（専有+階共用+建物共用+グループ共用）
    */
   const executeCalculation = useCallback(async (): Promise<
     Result<void, CalculationError>
@@ -31,43 +68,97 @@ export function useCalculationActions() {
       // 建物全体の全用途を取得
       const allBuildingUsages = building.floors.flatMap((f) => f.usages);
 
-      // 全専有面積の合計を計算（個別の用途ごと）
-      const totalExclusiveArea = allBuildingUsages.reduce(
-        (sum, usage) => sum + usage.exclusiveArea,
+      // 用途コードごとの専有面積合計を計算
+      const usageCodeTotals = new Map<string, number>();
+      allBuildingUsages.forEach((usage) => {
+        const current = usageCodeTotals.get(usage.annexedCode) || 0;
+        usageCodeTotals.set(usage.annexedCode, current + usage.exclusiveArea);
+      });
+
+      // 全専有面積の合計を計算
+      const totalExclusiveArea = Array.from(usageCodeTotals.values()).reduce(
+        (sum, area) => sum + area,
         0
       );
 
-      // 建物共用部の案分を計算（階ごとに按分し、用途ごと×階ごとに記録）
-      // buildingCommonByUsageByFloor[usageId][sourceFloorId] = 按分面積
-      const buildingCommonByUsageByFloor = new Map<string, Map<string, number>>();
+      // 按分経過の追跡情報
+      const buildingCommonTraces: any[] = [];
+      const usageGroupTraces: any[] = [];
+
+      // ===================================================================
+      // 建物共用部の按分計算（重要な仕様）
+      // ===================================================================
+      // 仕様：
+      // - 各階の建物共用部を、全建物の全用途コードに按分
+      // - 按分比率：各用途コードの専有面積合計 / 全建物の専有面積合計
+      // - 按分結果は「その階」にのみ加算される（他の階には加算されない）
+      // - 結果は buildingCommonByFloorAndCode[floorId][annexedCode] に格納
+      // 
+      // 例：2階に建物共用部100㎡がある場合
+      //   全建物の専有面積：四項100㎡ + 五項ロ300㎡ = 400㎡
+      //   四項への按分：100/400 * 100 = 25㎡ → 2階に加算
+      //   五項ロへの按分：300/400 * 100 = 75㎡ → 2階に加算
+      //   ※四項が2階に存在しない場合でも、2階に仮想用途として作成される
+      // ===================================================================
+      const buildingCommonByFloorAndCode = new Map<string, Map<string, number>>();
+      
+      // 用途コード→用途名のマップを作成
+      const usageCodeToName = new Map<string, string>();
+      allBuildingUsages.forEach(u => usageCodeToName.set(u.annexedCode, u.annexedName));
       
       for (const floor of building.floors) {
         if (floor.buildingCommonArea > 0 && totalExclusiveArea > 0) {
-          // この階の建物共用部を、全建物の全用途に専有面積比で按分
-          allBuildingUsages.forEach((usage) => {
-            const ratio = usage.exclusiveArea / totalExclusiveArea;
+          const traceDistributions: any[] = [];
+          const floorDistributions = new Map<string, number>();
+          
+          // この階の建物共用部を、全建物の全用途コードに按分
+          usageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
+            const ratio = usageCodeTotal / totalExclusiveArea;
             const distributed = ratio * floor.buildingCommonArea;
             
-            // 用途ごとの階別按分マップを取得または作成
-            if (!buildingCommonByUsageByFloor.has(usage.id)) {
-              buildingCommonByUsageByFloor.set(usage.id, new Map<string, number>());
-            }
-            const byFloor = buildingCommonByUsageByFloor.get(usage.id)!;
-            byFloor.set(floor.id, distributed);
+            // この階の用途コード別按分を記録（この階にのみ加算される）
+            floorDistributions.set(annexedCode, distributed);
+            
+            // 経過表用のデータを収集
+            traceDistributions.push({
+              usageId: '', // 用途コード単位なのでusageIdは不要
+              annexedCode: annexedCode,
+              annexedName: usageCodeToName.get(annexedCode) || '',
+              floorId: floor.id,
+              floorName: floor.name,
+              distributedArea: distributed,
+              ratio: ratio,
+            });
+          });
+          
+          buildingCommonByFloorAndCode.set(floor.id, floorDistributions);
+          
+          buildingCommonTraces.push({
+            sourceFloorId: floor.id,
+            sourceFloorName: floor.name,
+            totalArea: floor.buildingCommonArea,
+            distributions: traceDistributions,
           });
         }
       }
-      
-      // 用途ごとの建物共用部按分の合計を計算
-      const buildingCommonResults = new Map<string, number>();
-      buildingCommonByUsageByFloor.forEach((byFloor, usageId) => {
-        const total = Array.from(byFloor.values()).reduce((sum, val) => sum + val, 0);
-        buildingCommonResults.set(usageId, total);
-      });
 
-      // 全階の全グループ共用部の案分計算（グループ内の用途の建物全体の専有面積比で按分）
-      // usageGroupByUsageByGroup[usageId][groupId] = 按分面積
-      const usageGroupByUsageByGroup = new Map<string, Map<string, number>>();
+      // ===================================================================
+      // グループ共用部の按分計算（重要な仕様）
+      // ===================================================================
+      // 仕様：
+      // - 各グループの共用部を、グループ内の用途コードに按分
+      // - 按分比率：各用途コードの専有面積合計 / グループ内の専有面積合計
+      // - 按分結果は「そのグループが存在する階」にのみ加算される
+      // - 結果は usageGroupByFloorAndCode[floorId][annexedCode] に格納
+      // 
+      // 例：1階にグループ共用部100㎡がある場合（グループ：二項ロ、四項）
+      //   グループ内の専有面積：二項ロ200㎡ + 四項100㎡ = 300㎡
+      //   二項ロへの按分：200/300 * 100 = 66.67㎡ → 1階に加算
+      //   四項への按分：100/300 * 100 = 33.33㎡ → 1階に加算
+      //   ※四項が1階に存在しない場合でも、1階に仮想用途として作成される
+      //   ※二項ロが2階に存在しても、1階のグループなので2階には加算されない
+      // ===================================================================
+      const usageGroupByFloorAndCode = new Map<string, Map<string, any>>();
       
       for (const floor of building.floors) {
         for (const group of floor.usageGroups) {
@@ -92,10 +183,19 @@ export function useCalculationActions() {
             }
           }
 
-          // グループ内の用途の建物全体の専有面積合計を計算
-          const totalGroupExclusive = allBuildingUsages
+          // グループ内の用途コードごとの専有面積合計を計算
+          const groupUsageCodeTotals = new Map<string, number>();
+          allBuildingUsages
             .filter(u => groupUsageIds.has(u.id))
-            .reduce((sum, usage) => sum + usage.exclusiveArea, 0);
+            .forEach((usage) => {
+              const current = groupUsageCodeTotals.get(usage.annexedCode) || 0;
+              groupUsageCodeTotals.set(usage.annexedCode, current + usage.exclusiveArea);
+            });
+
+          const totalGroupExclusive = Array.from(groupUsageCodeTotals.values()).reduce(
+            (sum, area) => sum + area,
+            0
+          );
 
           if (totalGroupExclusive === 0) {
             dispatch({ type: 'SET_CALCULATING', payload: false });
@@ -108,33 +208,65 @@ export function useCalculationActions() {
             };
           }
 
-          // グループ内の各用途に、建物全体の専有面積比で按分
-          allBuildingUsages.forEach((usage) => {
-            if (!groupUsageIds.has(usage.id)) {
-              return; // このグループに含まれない用途はスキップ
-            }
-            
-            const ratio = usage.exclusiveArea / totalGroupExclusive;
+          const traceDistributions: any[] = [];
+          
+          // グループ内の用途コードに按分し、この階に記録
+          if (!usageGroupByFloorAndCode.has(floor.id)) {
+            usageGroupByFloorAndCode.set(floor.id, new Map());
+          }
+          const floorGroupDistributions = usageGroupByFloorAndCode.get(floor.id)!;
+          
+          groupUsageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
+            const ratio = usageCodeTotal / totalGroupExclusive;
             const distributed = ratio * group.commonArea;
             
-            // 用途ごとのグループ別按分マップを取得または作成
-            if (!usageGroupByUsageByGroup.has(usage.id)) {
-              usageGroupByUsageByGroup.set(usage.id, new Map<string, number>());
-            }
-            const byGroup = usageGroupByUsageByGroup.get(usage.id)!;
-            byGroup.set(group.id, distributed);
+            // この階の用途コード別按分を記録（複数グループある場合は加算）
+            const current = floorGroupDistributions.get(annexedCode) || { 
+              total: 0, 
+              details: [] 
+            };
+            current.total += distributed;
+            current.details.push({
+              sourceId: group.id,
+              sourceName: `${floor.name} グループ`,
+              sourceType: 'group' as const,
+              distributedArea: distributed,
+              ratio: ratio,
+            });
+            floorGroupDistributions.set(annexedCode, current);
+            
+            // 経過表用のデータを収集
+            traceDistributions.push({
+              usageId: '', // 用途コード単位なのでusageIdは不要
+              annexedCode: annexedCode,
+              annexedName: usageCodeToName.get(annexedCode) || '',
+              distributedArea: distributed,
+              ratio: ratio,
+            });
+          });
+          
+          usageGroupTraces.push({
+            groupId: group.id,
+            groupFloorId: floor.id,
+            groupFloorName: floor.name,
+            totalArea: group.commonArea,
+            usageIds: Array.from(groupUsageIds),
+            distributions: traceDistributions,
           });
         }
       }
-      
-      // 用途ごとのグループ共用部按分の合計を計算
-      const usageGroupResults = new Map<string, number>();
-      usageGroupByUsageByGroup.forEach((byGroup, usageId) => {
-        const total = Array.from(byGroup.values()).reduce((sum, val) => sum + val, 0);
-        usageGroupResults.set(usageId, total);
-      });
 
+      // ===================================================================
       // 各階の計算を実行
+      // ===================================================================
+      // 処理の流れ：
+      // 1. 階共用部を按分（その階の用途のみ）
+      // 2. この階に存在すべき全用途コードを収集：
+      //    - 実際にこの階に存在する用途コード
+      //    - この階の建物共用部から按分を受ける用途コード（仮想用途）
+      //    - この階のグループ共用部から按分を受ける用途コード（仮想用途）
+      // 3. 各用途コードについて内訳を計算
+      // ===================================================================
       const floorResultsMap = new Map<string, any[]>();
       
       for (const floor of building.floors) {
@@ -180,23 +312,92 @@ export function useCalculationActions() {
           return floorCommonResults;
         }
 
-        // この階の用途の総面積を計算
-        const totalAreasResult = calculationEngine.calculateTotalAreas(
-          floor.usages,
-          floorCommonResults.value,
-          buildingCommonResults,
-          buildingCommonByUsageByFloor,
-          usageGroupResults,
-          usageGroupByUsageByGroup
-        );
-
-        if (!totalAreasResult.success) {
-          dispatch({ type: 'SET_CALCULATING', payload: false });
-          return totalAreasResult as any;
+        // -------------------------------------------------------------------
+        // この階に存在すべき全用途コードを収集（実用途 + 仮想用途）
+        // -------------------------------------------------------------------
+        const allUsageCodesInFloor = new Set<string>();
+        
+        // 1. 実際にこの階に存在する用途コード
+        floor.usages.forEach(u => allUsageCodesInFloor.add(u.annexedCode));
+        
+        // 2. この階の建物共用部から按分を受ける用途コード（仮想用途として追加）
+        //    重要：建物共用部は「その階」にのみ加算されるため、この階の分のみ取得
+        const thisFloorDistributions = buildingCommonByFloorAndCode.get(floor.id);
+        if (thisFloorDistributions) {
+          thisFloorDistributions.forEach((_, code) => {
+            allUsageCodesInFloor.add(code);
+          });
         }
+        
+        // 3. この階のグループ共用部から按分を受ける用途コード（仮想用途として追加）
+        //    重要：グループ共用部は「そのグループがある階」にのみ加算されるため、この階の分のみ取得
+        const thisFloorGroupDistributions = usageGroupByFloorAndCode.get(floor.id);
+        if (thisFloorGroupDistributions) {
+          thisFloorGroupDistributions.forEach((_, code) => {
+            allUsageCodesInFloor.add(code);
+          });
+        }
+        
+        // -------------------------------------------------------------------
+        // 各用途コードについて面積内訳を計算
+        // -------------------------------------------------------------------
+        const breakdowns: any[] = [];
+        allUsageCodesInFloor.forEach(annexedCode => {
+          // この階の実際の用途を取得（存在しない場合は仮想用途）
+          const existingUsage = floor.usages.find(u => u.annexedCode === annexedCode);
+          const exclusiveArea = existingUsage ? existingUsage.exclusiveArea : 0;
+          const usageId = existingUsage ? existingUsage.id : `virtual-${floor.id}-${annexedCode}`;
+          
+          // 階共用部按分（実際の用途のみ）
+          const floorCommon = existingUsage ? (floorCommonResults.value.get(existingUsage.id) ?? 0) : 0;
+          
+          // 建物共用部按分（この階の建物共用部のみ）
+          let buildingCommon = 0;
+          const buildingCommonDetails: any[] = [];
+          if (thisFloorDistributions && thisFloorDistributions.has(annexedCode)) {
+            const dist = thisFloorDistributions.get(annexedCode) || 0;
+            buildingCommon = dist;
+            buildingCommonDetails.push({
+              sourceId: floor.id,
+              sourceName: floor.name,
+              sourceType: 'building' as const,
+              distributedArea: dist,
+              ratio: dist / (floor.buildingCommonArea || 1),
+            });
+          }
+          
+          // グループ共用部按分（この階のグループ共用部のみ）
+          let usageGroupCommon = 0;
+          const usageGroupDetailsForUsage: any[] = [];
+          const thisFloorGroupDistributions = usageGroupByFloorAndCode.get(floor.id);
+          if (thisFloorGroupDistributions && thisFloorGroupDistributions.has(annexedCode)) {
+            const groupData = thisFloorGroupDistributions.get(annexedCode);
+            usageGroupCommon = groupData.total;
+            usageGroupDetailsForUsage.push(...groupData.details);
+          }
+          
+          const total = Math.round(
+            (exclusiveArea + floorCommon + buildingCommon + usageGroupCommon) * 100
+          ) / 100;
 
-        floorResultsMap.set(floor.id, totalAreasResult.value);
-        allFloorResults.push(totalAreasResult.value);
+          const breakdown: any = {
+            usageId: usageId,
+            annexedCode: annexedCode,
+            annexedName: usageCodeToName.get(annexedCode) || '',
+            exclusiveArea: Math.round(exclusiveArea * 100) / 100,
+            floorCommonArea: Math.round(floorCommon * 100) / 100,
+            buildingCommonArea: Math.round(buildingCommon * 100) / 100,
+            buildingCommonDetails: buildingCommonDetails,
+            usageGroupCommonArea: Math.round(usageGroupCommon * 100) / 100,
+            usageGroupDetails: usageGroupDetailsForUsage,
+            totalArea: total,
+          };
+
+          breakdowns.push(breakdown);
+        });
+
+        floorResultsMap.set(floor.id, breakdowns);
+        allFloorResults.push(breakdowns);
       }
 
       // 建物全体の集計を実行
@@ -222,37 +423,6 @@ export function useCalculationActions() {
           0
         );
         
-        // この階に入力された建物共用部の按分結果を収集
-        const buildingCommonDistribution: {
-          usageId: string;
-          annexedCode: string;
-          annexedName: string;
-          floorName: string;
-          distributedArea: number;
-        }[] = [];
-
-        if (floor.buildingCommonArea > 0 && totalExclusiveArea > 0) {
-          // この階の建物共用部を全用途に按分した結果を収集
-          allBuildingUsages.forEach((usage) => {
-            const ratio = usage.exclusiveArea / totalExclusiveArea;
-            const distributed = ratio * floor.buildingCommonArea;
-            
-            if (distributed > 0) {
-              // その用途が存在する階を特定
-              const usageFloor = building.floors.find((f) =>
-                f.usages.some((u) => u.id === usage.id)
-              );
-              buildingCommonDistribution.push({
-                usageId: usage.id,
-                annexedCode: usage.annexedCode,
-                annexedName: usage.annexedName,
-                floorName: usageFloor?.name || '',
-                distributedArea: distributed,
-              });
-            }
-          });
-        }
-        
         return {
           floorId: floor.id,
           floorName: floor.name,
@@ -263,7 +433,6 @@ export function useCalculationActions() {
             buildingCommonArea: floor.buildingCommonArea,
             usageGroupCommonArea,
           },
-          buildingCommonDistribution,
         };
       });
 
@@ -273,6 +442,10 @@ export function useCalculationActions() {
         payload: {
           floorResults,
           buildingTotal: aggregationResult.value,
+          distributionTrace: {
+            buildingCommonTraces,
+            usageGroupTraces,
+          },
         },
       });
 

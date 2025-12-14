@@ -239,3 +239,75 @@
   padding: 0.4rem 0.3rem !important;
   border-top: 3px solid #f57c00 !important;
 }
+
+/* 按分経過表 */
+.distribution-trace {
+  margin-bottom: 0.6rem;
+  padding: 0.5rem;
+  background-color: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 4px;
+}
+
+.distribution-trace h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  color: #2e7d32;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  border-bottom: 2px solid #4caf50;
+}
+
+.distribution-trace .trace-section {
+  margin-bottom: 0.5rem;
+  padding: 0.4rem;
+  background-color: white;
+  border: 1px solid #a5d6a7;
+  border-radius: 3px;
+}
+
+.distribution-trace .trace-section h4 {
+  margin-top: 0;
+  margin-bottom: 0.3rem;
+  color: #2e7d32;
+  font-size: 0.85rem;
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.distribution-trace .result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+.distribution-trace .result-table th,
+.distribution-trace .result-table td {
+  padding: 0.3rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.distribution-trace .result-table thead th {
+  background-color: #c8e6c9;
+  font-weight: bold;
+  padding: 0.4rem 0.3rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.distribution-trace .result-table tbody td {
+  text-align: right;
+  padding: 0.3rem;
+  border: 1px solid #ddd;
+}
+
+.distribution-trace .result-table tbody td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.distribution-trace .result-table tbody tr:hover {
+  background-color: #f1f8e9;
+}

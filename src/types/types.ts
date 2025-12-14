@@ -65,6 +65,17 @@ export interface Building {
 // ============================================================================
 
 /**
+ * DistributionDetail - 按分の詳細情報
+ */
+export interface DistributionDetail {
+  sourceId: string; // 按分元のID（階IDまたはグループID）
+  sourceName: string; // 按分元の名称
+  sourceType: "floor" | "building" | "group"; // 按分元の種類
+  distributedArea: number; // 按分された面積
+  ratio: number; // 按分比率（0-1）
+}
+
+/**
  * UsageAreaBreakdown - 用途別面積内訳
  */
 export interface UsageAreaBreakdown {
@@ -74,9 +85,9 @@ export interface UsageAreaBreakdown {
   exclusiveArea: number;
   floorCommonArea: number; // 階の共用部の案分面積
   buildingCommonArea: number; // 建物全体の共用部の案分面積（全階からの合計）
-  buildingCommonByFloor?: Map<string, number>; // 階ごとの建物共用部按分（floorId → 按分面積）
+  buildingCommonDetails?: DistributionDetail[]; // 階ごとの建物共用部按分の詳細
   usageGroupCommonArea: number; // 特定用途間の共用部の案分面積（全グループからの合計）
-  usageGroupCommonByGroup?: Map<string, number>; // グループごとの按分（groupId → 按分面積）
+  usageGroupDetails?: DistributionDetail[]; // グループごとの按分の詳細
   totalArea: number; // 総面積
 }
 
@@ -94,14 +105,6 @@ export interface FloorResult {
     buildingCommonArea: number; // 建物共用部面積（案分前）
     usageGroupCommonArea: number; // 用途グループ共用部面積の合計（案分前）
   };
-  // この階に入力された建物共用部の按分結果（全用途への按分を含む）
-  buildingCommonDistribution?: {
-    usageId: string;
-    annexedCode: string;
-    annexedName: string;
-    floorName: string; // その用途が存在する階名
-    distributedArea: number;
-  }[];
 }
 
 /**
@@ -126,11 +129,48 @@ export interface BuildingTotalResult {
 }
 
 /**
+ * DistributionTrace - 按分経過の追跡情報
+ */
+export interface DistributionTrace {
+  // 建物共用部の按分経過
+  buildingCommonTraces: {
+    sourceFloorId: string;
+    sourceFloorName: string;
+    totalArea: number;
+    distributions: {
+      usageId: string;
+      annexedCode: string;
+      annexedName: string;
+      floorId: string;
+      floorName: string;
+      distributedArea: number;
+      ratio: number;
+    }[];
+  }[];
+  // グループ共用部の按分経過
+  usageGroupTraces: {
+    groupId: string;
+    groupFloorId: string;
+    groupFloorName: string;
+    totalArea: number;
+    usageIds: string[];
+    distributions: {
+      usageId: string;
+      annexedCode: string;
+      annexedName: string;
+      distributedArea: number;
+      ratio: number;
+    }[];
+  }[];
+}
+
+/**
  * CalculationResults - 計算結果全体
  */
 export interface CalculationResults {
   floorResults: FloorResult[];
   buildingTotal: BuildingTotalResult;
+  distributionTrace: DistributionTrace; // 按分経過表
 }
 
 // ============================================================================
