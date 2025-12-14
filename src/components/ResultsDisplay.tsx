@@ -223,33 +223,6 @@ export function ResultsDisplay() {
     return combined;
   };
 
-  // 用途ごとの専有面積合計を計算
-  const usageTotals = new Map<string, number>();
-  allUsageCodes.forEach((code) => {
-    const total = floorResults.reduce((sum, floor) => {
-      const breakdown = getBreakdown(floor.floorId, code);
-      return sum + (breakdown ? breakdown.exclusiveArea : 0);
-    }, 0);
-    usageTotals.set(code, total);
-  });
-
-  // 各共用部の合計を計算
-  const totalFloorCommon = floorResults.reduce(
-    (sum, floor) => sum + (floor.originalData?.floorCommonArea || 0),
-    0
-  );
-  const totalBuildingCommon = floorResults.reduce(
-    (sum, floor) => sum + (floor.originalData?.buildingCommonArea || 0),
-    0
-  );
-  const totalGroupCommon = floorResults.reduce(
-    (sum, floor) => sum + (floor.originalData?.usageGroupCommonArea || 0),
-    0
-  );
-
-  // 全専有面積の合計
-  const grandTotalExclusive = Array.from(usageTotals.values()).reduce((sum, val) => sum + val, 0);
-
   return (
     <div className="results-display">
       <h2>計算結果</h2>

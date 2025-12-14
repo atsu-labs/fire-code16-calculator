@@ -87,6 +87,7 @@ export function useFloorActions() {
         return {
           success: false,
           error: {
+            type: 'REQUIRED_FIELD',
             field: 'floor',
             message: 'コピー元の階が見つかりません',
           },
@@ -97,6 +98,7 @@ export function useFloorActions() {
         return {
           success: false,
           error: {
+            type: 'REQUIRED_FIELD',
             field: 'floor',
             message: 'コピー先の階が見つかりません',
           },
@@ -136,6 +138,7 @@ export function useFloorActions() {
         return {
           success: false,
           error: {
+            type: 'REQUIRED_FIELD',
             field: 'floor',
             message: '階の更新に失敗しました',
           },
