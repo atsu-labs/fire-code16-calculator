@@ -51,6 +51,51 @@ body {
   line-height: 1.1;
 }
 
+/* ヘッダ内の左右レイアウト */
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.25rem 0.5rem;
+}
+
+.header-left {
+  text-align: left;
+}
+
+.header-left h1 {
+  font-size: 1.1rem;
+  margin-bottom: 0.15rem;
+}
+
+.header-right {
+  /* ヘッダに配置した AppControls を右側に寄せる */
+  display: flex;
+  align-items: center;
+}
+
+/* ヘッダ内にある app-controls のデフォルト sticky を解除して見た目を調整 */
+.app-header .app-controls {
+  position: static;
+  top: auto;
+  z-index: 0;
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  padding: 0;
+  gap: 0.5rem;
+}
+
+/* ヘッダ内のボタンに最小の余白を与える */
+.app-header .calculate-button,
+.app-header .clear-button {
+  min-width: 84px;
+  height: 36px;
+}
+
 .app-main {
   display: grid;
   grid-template-columns: 1fr;
@@ -132,6 +177,21 @@ body {
 
   .app-header p {
     font-size: 0.7rem;
+  }
+
+  /* モバイルではヘッダ内を縦並びにしてボタンをタイトル下に表示 */
+  .app-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-left {
+    text-align: center;
+  }
+
+  .header-right {
+    margin-top: 0.4rem;
+    justify-content: center;
   }
 
   .app {

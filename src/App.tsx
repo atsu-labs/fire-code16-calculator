@@ -18,14 +18,19 @@ function AppContent() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>消防法 用途別面積計算機</h1>
-        <p>建物の階ごとに用途と面積を入力し、共用部の按分計算を行います</p>
+        <div className="app-header-inner">
+          <div className="header-left">
+            <h1>消防法 用途別面積計算機</h1>
+            <p>建物の階ごとに用途と面積を入力し、共用部の按分計算を行います</p>
+          </div>
+          <div className="header-right">
+            <AppControls />
+          </div>
+        </div>
       </header>
 
-      <AppControls />
-
       <main className="app-main">
-        <section className="input-section">
+  <section className="input-section">
           <FloorManager />
           
           {state.building.floors.map((floor) => {
