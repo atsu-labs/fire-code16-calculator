@@ -3,7 +3,9 @@
  * 消防法に基づく建物用途別面積計算機
  */
 
+import { useState } from 'react';
 import { AppStateProvider, useAppState } from './contexts';
+import { useFloorActions } from './contexts/FloorActions';
 import { FloorManager } from './components/FloorManager';
 import { UsageManager } from './components/UsageManager';
 import { CommonAreaInputs } from './components/CommonAreaInputs';
@@ -14,6 +16,8 @@ import './App.css';
 
 function AppContent() {
   const { state } = useAppState();
+  const { copyFloorData } = useFloorActions();
+  const [copyingFloorId, setCopyingFloorId] = useState<string | null>(null);
 
   return (
     <div className="app">
@@ -30,7 +34,7 @@ function AppContent() {
       </header>
 
       <main className="app-main">
-  <section className="input-section">
+        <section className="input-section">
           <FloorManager />
           
           {state.building.floors.map((floor) => {
@@ -47,10 +51,66 @@ function AppContent() {
             // 全ての面積を合計
             const totalArea = totalExclusiveArea + floor.floorCommonArea + floor.buildingCommonArea + totalGroupCommonArea;
 
+            const hasData = floor.usages.length > 0 || 
+                           floor.floorCommonArea > 0 || 
+                           floor.buildingCommonArea > 0 || 
+                           floor.usageGroups.length > 0;
+
+            const handleCopyClick = () => {
+              if (copyingFloorId === floor.id) {
+                // キャンセル
+                setCopyingFloorId(null);
+              } else {
+                // コピーモード開始
+                setCopyingFloorId(floor.id);
+              }
+            };
+
+            const handlePasteClick = async () => {
+              if (!copyingFloorId) return;
+              
+              const confirmed = window.confirm(
+                `${state.building.floors.find((f) => f.id === copyingFloorId)?.name}の内容を${floor.name}にコピーしますか?\n\n※${floor.name}の既存データは上書きされます`
+              );
+              
+              if (confirmed) {
+                await copyFloorData(copyingFloorId, floor.id);
+                setCopyingFloorId(null);
+              }
+            };
+
             return (
               <div key={floor.id} className="floor-section">
                 <h3 className="floor-title">
                   <span className="floor-name">{floor.name}</span>
+                  <span className="floor-actions">
+                    {copyingFloorId === floor.id ? (
+                      <button
+                        className="floor-copy-btn copying"
+                        onClick={handleCopyClick}
+                        title="コピーをキャンセル"
+                      >
+                        📋 キャンセル
+                      </button>
+                    ) : copyingFloorId ? (
+                      <button
+                        className="floor-paste-btn"
+                        onClick={handlePasteClick}
+                        title={`${state.building.floors.find((f) => f.id === copyingFloorId)?.name}の内容を貼り付け`}
+                      >
+                        📥 貼り付け
+                      </button>
+                    ) : (
+                      <button
+                        className="floor-copy-btn"
+                        onClick={handleCopyClick}
+                        disabled={!hasData}
+                        title={hasData ? 'この階の内容をコピー' : 'コピーするデータがありません'}
+                      >
+                        📋 コピー
+                      </button>
+                    )}
+                  </span>
                   <span className="floor-total-area">
                     合計: {totalArea.toFixed(2)} m²
                   </span>

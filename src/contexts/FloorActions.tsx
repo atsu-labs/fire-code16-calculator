@@ -73,6 +73,81 @@ export function useFloorActions() {
   );
 
   /**
+   * copyFloorData - 階の用途・面積・共用面積情報を他の階にコピー
+   */
+  const copyFloorData = useCallback(
+    async (
+      sourceFloorId: string,
+      targetFloorId: string
+    ): Promise<Result<Floor, ValidationError>> => {
+      const sourceFloor = state.building.floors.find((f) => f.id === sourceFloorId);
+      const targetFloor = state.building.floors.find((f) => f.id === targetFloorId);
+
+      if (!sourceFloor) {
+        return {
+          success: false,
+          error: {
+            field: 'floor',
+            message: 'コピー元の階が見つかりません',
+          },
+        };
+      }
+
+      if (!targetFloor) {
+        return {
+          success: false,
+          error: {
+            field: 'floor',
+            message: 'コピー先の階が見つかりません',
+          },
+        };
+      }
+
+      // 用途をコピー（新しいIDを生成）
+      const copiedUsages = sourceFloor.usages.map((usage) => ({
+        ...usage,
+        id: generateUUID(),
+      }));
+
+      // グループ共用部をコピー（新しいIDを生成し、floorIdを更新）
+      const copiedUsageGroups = sourceFloor.usageGroups.map((group) => ({
+        ...group,
+        id: generateUUID(),
+        floorId: targetFloorId,
+      }));
+
+      // ターゲット階を更新
+      dispatch({
+        type: 'UPDATE_FLOOR',
+        payload: {
+          floorId: targetFloorId,
+          updates: {
+            floorCommonArea: sourceFloor.floorCommonArea,
+            buildingCommonArea: sourceFloor.buildingCommonArea,
+            usages: copiedUsages,
+            usageGroups: copiedUsageGroups,
+          },
+        },
+      });
+
+      // 更新後の階を取得
+      const updatedFloor = state.building.floors.find((f) => f.id === targetFloorId);
+      if (!updatedFloor) {
+        return {
+          success: false,
+          error: {
+            field: 'floor',
+            message: '階の更新に失敗しました',
+          },
+        };
+      }
+
+      return { success: true, value: updatedFloor };
+    },
+    [state.building.floors, dispatch]
+  );
+
+  /**
    * updateFloor - 階情報を更新
    */
   const updateFloor = useCallback(
@@ -226,5 +301,6 @@ export function useFloorActions() {
     updateFloor,
     deleteFloor,
     setFloorCounts,
+    copyFloorData,
   };
 }

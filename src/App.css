@@ -135,12 +135,60 @@ body {
   padding-bottom: 0.15rem;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .floor-name {
   flex-shrink: 0;
+}
+
+.floor-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.floor-copy-btn,
+.floor-paste-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.floor-copy-btn:hover:not(:disabled),
+.floor-paste-btn:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
+.floor-copy-btn.copying {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+  font-weight: 600;
+}
+
+.floor-copy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.floor-paste-btn {
+  background-color: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+  font-weight: 600;
+}
+
+.floor-paste-btn:hover {
+  background-color: #c3e6cb;
+  border-color: #1e7e34;
 }
 
 .floor-total-area {

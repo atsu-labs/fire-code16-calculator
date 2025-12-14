@@ -68,7 +68,7 @@ export function CommonAreaInputs({ floorId }: CommonAreaInputsProps) {
             step="0.01"
             aria-label="建物全体共用部面積"
           />
-          <span className="hint">この階にある建物全体の共用部（エントランス、設備室、エレベーター等）</span>
+          <span className="hint">この階にある建物全体の共用部（エントランス、設備室、機械室等）</span>
         </div>
       </div>
     </div>
