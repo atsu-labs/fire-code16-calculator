@@ -25,28 +25,28 @@ export class CalculationEngine {
    * Task 3.1: 階の共用部案分計算
    * Requirement 7: 階の共用部面積の案分計算
    *
-   * 建物全体の各用途の専用部分面積の比率に応じて共用部面積を案分
+   * 階内の各用途の専用部分面積の比率に応じて共用部面積を案分
    * 累積丸めを使用して丸め誤差を最小化
    *
-   * @param allBuildingUsages - 建物全体の全用途リスト
+   * @param floorUsages - 階内の用途リスト
    * @param floorCommonArea - 階の共用部面積
    * @returns 各用途IDに対する案分面積のMap
    */
   calculateFloorCommonArea(
-    allBuildingUsages: Usage[],
+    floorUsages: Usage[],
     floorCommonArea: number
   ): Result<Map<string, number>, CalculationError> {
     // 共用部面積が0の場合は全用途に0を割り当て
     if (floorCommonArea === 0) {
       const result = new Map<string, number>();
-      allBuildingUsages.forEach((usage) => {
+      floorUsages.forEach((usage) => {
         result.set(usage.id, 0);
       });
       return { success: true, value: result };
     }
 
-    // 建物全体の専用部分面積の合計を算出
-    const totalExclusiveArea = allBuildingUsages.reduce(
+    // 専用部分面積の合計を算出
+    const totalExclusiveArea = floorUsages.reduce(
       (sum, usage) => sum + usage.exclusiveArea,
       0
     );
@@ -61,12 +61,12 @@ export class CalculationEngine {
       };
     }
 
-    // 累積丸めで各用途に案分（建物全体の比率を使用）
+    // 累積丸めで各用途に案分
     const result = new Map<string, number>();
     let cumulativeExact = 0;
     let cumulativeRounded = 0;
 
-    allBuildingUsages.forEach((usage) => {
+    floorUsages.forEach((usage) => {
       const ratio = usage.exclusiveArea / totalExclusiveArea;
       cumulativeExact += ratio * floorCommonArea;
 

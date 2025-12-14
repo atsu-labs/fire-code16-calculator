@@ -418,9 +418,10 @@ describe('CalculationActions', () => {
           payload: {
             floorId: floor1Id,
             usageGroup: {
-              id: 'group1',
-              usageIds: [usage1Id, usage2Id],
-              commonArea: 100,
+                  id: 'group1',
+                  floorId: floor1Id,
+                  usageIds: [usage1Id, usage2Id],
+                  commonArea: 100,
             },
           },
         });

@@ -55,6 +55,8 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.3rem;
+  /* デスクトップでの高さ設定（ヘッダーを除いた画面全体） */
+  height: calc(100vh - 50px);
 }
 
 @media (min-width: 768px) {
@@ -67,6 +69,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  /* 独立したスクロール領域 */
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 .floor-section {
@@ -101,9 +106,9 @@ body {
 }
 
 .results-section {
-  position: sticky;
-  top: 52px; /* ヘッダーの高さ + 少しの余白 */
-  align-self: start;
+  /* デスクトップでの独立したスクロール領域 */
+  overflow-y: auto;
+  padding-right: 0.5rem;
 }
 
 @media (max-width: 767px) {
@@ -111,8 +116,14 @@ body {
     padding-top: 50px; /* モバイルでもヘッダー分の余白 */
   }
 
+  .app-main {
+    height: auto; /* モバイルでは高さ制限を解除 */
+  }
+
+  .input-section,
   .results-section {
-    position: static;
+    overflow-y: visible; /* モバイルでは通常のスクロール */
+    padding-right: 0;
   }
 
   .app-header h1 {
@@ -196,6 +207,57 @@ body {
   .floor-total-area {
     color: #4d94ff;
   }
+
+  /* ダークモード用のスクロールバースタイル */
+  .input-section::-webkit-scrollbar-track,
+  .results-section::-webkit-scrollbar-track {
+    background: #2a2a2a;
+  }
+
+  .input-section::-webkit-scrollbar-thumb,
+  .results-section::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  .input-section::-webkit-scrollbar-thumb:hover,
+  .results-section::-webkit-scrollbar-thumb:hover {
+    background: #777;
+  }
+
+  .input-section,
+  .results-section {
+    scrollbar-color: #555 #2a2a2a;
+  }
+}
+
+/* スクロールバーのカスタムスタイル */
+.input-section::-webkit-scrollbar,
+.results-section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.input-section::-webkit-scrollbar-track,
+.results-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.input-section::-webkit-scrollbar-thumb,
+.results-section::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.input-section::-webkit-scrollbar-thumb:hover,
+.results-section::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Firefox用のスクロールバースタイル */
+.input-section,
+.results-section {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 
 /* プリント時のスタイル */
@@ -212,9 +274,11 @@ body {
 
   .app-main {
     grid-template-columns: 1fr;
+    height: auto; /* プリント時は高さ制限を解除 */
   }
 
+  .input-section,
   .results-section {
-    position: static;
+    overflow-y: visible; /* プリント時は全て表示 */
   }
 }

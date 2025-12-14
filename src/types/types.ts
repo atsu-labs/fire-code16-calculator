@@ -86,8 +86,12 @@ export interface UsageAreaBreakdown {
   floorCommonArea: number; // 階の共用部の案分面積
   buildingCommonArea: number; // 建物全体の共用部の案分面積（全階からの合計）
   buildingCommonDetails?: DistributionDetail[]; // 階ごとの建物共用部按分の詳細
+  // 各用途ごとの、階ごとの建物共用部按分（テストや詳細表示で使用）
+  buildingCommonByFloor?: Map<string, number> | undefined;
   usageGroupCommonArea: number; // 特定用途間の共用部の案分面積（全グループからの合計）
   usageGroupDetails?: DistributionDetail[]; // グループごとの按分の詳細
+  // グループ共用部ごとの按分詳細（グループID->用途ID->面積 のような構造を格納する目的）
+  usageGroupCommonByGroup?: Map<string, number> | undefined;
   totalArea: number; // 総面積
 }
 
