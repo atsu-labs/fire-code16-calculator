@@ -33,10 +33,11 @@ export interface UsageGroup {
  * Floor - 階
  *
  * @property id - 階の一意識別子（UUID）
- * @property name - 階名称（例: "1階", "地下1階"）
- * @property floorType - 階種別（'above-ground': 地上階, 'basement': 地階）
+ * @property name - 階名称（例: "1階", "地下1階", "非階1"）
+ * @property floorType - 階種別（'above-ground': 地上階, 'basement': 地階, 'non-floor': 非階）
  *                        オプショナル、デフォルト値は 'above-ground'
  *                        階の論理的な順序決定と階数入力機能で使用される
+ *                        非階はPH（ペントハウス）、M（機械室）、R（屋上）などの階として扱わない層
  * @property floorCommonArea - 階の共用部面積
  * @property buildingCommonArea - 各階に存在する建物全体の共用部面積
  * @property usages - この階に存在する用途（消防法別表第一）の配列
@@ -45,7 +46,7 @@ export interface UsageGroup {
 export interface Floor {
   id: string;
   name: string;
-  floorType?: "above-ground" | "basement";
+  floorType?: "above-ground" | "basement" | "non-floor";
   floorCommonArea: number;
   buildingCommonArea: number;
   usages: Usage[];
@@ -192,7 +193,8 @@ export type ValidationError =
   | { type: "MAX_VALUE_EXCEEDED"; field: string; message: string }
   | { type: "INVALID_USAGE_GROUP"; field: string; message: string }
   | { type: "MINIMUM_CONSTRAINT"; field: string; message: string }
-  | { type: "USER_CANCELLED"; field: string; message: string };
+  | { type: "USER_CANCELLED"; field: string; message: string }
+  | { type: "DUPLICATE"; field: string; message: string };
 
 /**
  * CalculationError - 計算エラー

@@ -11,6 +11,19 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* 階種別の色テーマ */
+  --floor-non-floor-bg: #f3e5f5;        /* 非階: 薄紫 */
+  --floor-non-floor-border: #9c27b0;     /* 非階: 濃い紫 */
+  --floor-non-floor-text: #6a1b9a;       /* 非階: 紫のテキスト */
+  
+  --floor-above-ground-bg: #e3f2fd;      /* 地上階: 薄青 */
+  --floor-above-ground-border: #1976d2;  /* 地上階: 濃い青 */
+  --floor-above-ground-text: #0d47a1;    /* 地上階: 青のテキスト */
+  
+  --floor-basement-bg: #fff3e0;          /* 地階: 薄オレンジ */
+  --floor-basement-border: #f57c00;      /* 地階: 濃いオレンジ */
+  --floor-basement-text: #e65100;        /* 地階: オレンジのテキスト */
 }
 
 a {

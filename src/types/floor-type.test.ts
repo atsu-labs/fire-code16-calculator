@@ -73,7 +73,7 @@ describe("Floor type - floorType field", () => {
     };
 
     // This ensures the type is correctly constrained
-    const floorType: "above-ground" | "basement" | undefined = floor.floorType;
-    expect(["above-ground", "basement", undefined]).toContain(floorType);
+    const floorType: "above-ground" | "basement" | "non-floor" | undefined = floor.floorType;
+    expect(["above-ground", "basement", "non-floor", undefined]).toContain(floorType);
   });
 });

@@ -4,6 +4,7 @@
  */
 
 import { useAppState } from '../contexts/useAppState';
+import { sortFloors } from '../utils/floorSorter';
 import '../styles/ResultsDisplay.css';
 import type { UsageAreaBreakdown } from '../types';
 
@@ -21,6 +22,9 @@ export function ResultsDisplay() {
         </div>
       );
     }
+
+    // 階をソート（非階 → 地上階 → 地階）
+    const sortedFloors = sortFloors(floors);
 
     // 全用途コードを収集（重複なし、ソート済み）
     const allUsageCodes = Array.from(
@@ -94,7 +98,7 @@ export function ResultsDisplay() {
               </tr>
             </thead>
             <tbody>
-              {floors.map((floor) => {
+              {sortedFloors.map((floor) => {
                 // 各階の専有面積合計
                 const floorExclusiveTotal = allUsageCodes.reduce((sum, code) => {
                   return sum + getExclusiveArea(floor.id, code);
@@ -113,9 +117,16 @@ export function ResultsDisplay() {
                   floor.buildingCommonArea +
                   floorGroupCommonTotal;
 
+                // 階種別に応じたクラス名を決定
+                const floorTypeClass = floor.floorType === 'non-floor' 
+                  ? 'non-floor' 
+                  : floor.floorType === 'basement' 
+                    ? 'basement' 
+                    : 'above-ground';
+
                 return (
                   <tr key={floor.id}>
-                    <td className="row-header">{floor.name}</td>
+                    <td className={`row-header ${floorTypeClass}`}>{floor.name}</td>
                     {allUsageCodes.map((code) => {
                       const area = getExclusiveArea(floor.id, code);
                       return (
@@ -181,6 +192,19 @@ export function ResultsDisplay() {
   }
 
   const { floorResults, buildingTotal, distributionTrace } = state.calculationResults;
+
+  // floorResultsを元の階情報でソート（非階 → 地上階 → 地階）
+  const sortedFloorResults = [...floorResults].sort((a, b) => {
+    const floorA = state.building.floors.find(f => f.id === a.floorId);
+    const floorB = state.building.floors.find(f => f.id === b.floorId);
+    if (!floorA || !floorB) return 0;
+    
+    // sortFloorsの順序に従う
+    const sortedFloors = sortFloors(state.building.floors);
+    const indexA = sortedFloors.findIndex(f => f.id === a.floorId);
+    const indexB = sortedFloors.findIndex(f => f.id === b.floorId);
+    return indexA - indexB;
+  });
 
   // 全用途コードを収集（重複なし、ソート済み）
   const allUsageCodes = Array.from(
@@ -250,16 +274,24 @@ export function ResultsDisplay() {
               </tr>
             </thead>
             <tbody>
-              {floorResults.map((floor) => {
+              {sortedFloorResults.map((floor) => {
                 // 階の合計 = この階の各用途の totalArea の合計
                 const floorTotalAfterDistribution = allUsageCodes.reduce((sum, code) => {
                   const breakdown = getBreakdown(floor.floorId, code);
                   return sum + (breakdown ? breakdown.totalArea : 0);
                 }, 0);
 
+                // 階種別に応じたクラス名を決定
+                const floorData = state.building.floors.find(f => f.id === floor.floorId);
+                const floorTypeClass = floorData?.floorType === 'non-floor' 
+                  ? 'non-floor' 
+                  : floorData?.floorType === 'basement' 
+                    ? 'basement' 
+                    : 'above-ground';
+
                 return (
                   <tr key={floor.floorId}>
-                    <td className="row-header">{floor.floorName}</td>
+                    <td className={`row-header ${floorTypeClass}`}>{floor.floorName}</td>
                     {allUsageCodes.map((code) => {
                       const breakdown = getBreakdown(floor.floorId, code);
                       if (breakdown) {
@@ -327,7 +359,15 @@ export function ResultsDisplay() {
           {distributionTrace.buildingCommonTraces.length > 0 && (
             <div className="distribution-trace">
               <h3>建物共用部の按分経過</h3>
-              {distributionTrace.buildingCommonTraces.map((trace) => {
+              {[...distributionTrace.buildingCommonTraces]
+                .sort((a, b) => {
+                  // 階IDでソート順を決定
+                  const sortedFloors = sortFloors(state.building.floors);
+                  const indexA = sortedFloors.findIndex(f => f.id === a.sourceFloorId);
+                  const indexB = sortedFloors.findIndex(f => f.id === b.sourceFloorId);
+                  return indexA - indexB;
+                })
+                .map((trace) => {
                 // 用途コード（annexedCode）ごとにグループ化して合計を計算
                 const usageGroups = new Map<string, {
                   annexedCode: string;
@@ -381,7 +421,15 @@ export function ResultsDisplay() {
           {distributionTrace.usageGroupTraces.length > 0 && (
             <div className="distribution-trace">
               <h3>グループ共用部の按分経過</h3>
-              {distributionTrace.usageGroupTraces.map((trace) => {
+              {[...distributionTrace.usageGroupTraces]
+                .sort((a, b) => {
+                  // 階IDでソート順を決定（groupFloorIdを使用）
+                  const sortedFloors = sortFloors(state.building.floors);
+                  const indexA = sortedFloors.findIndex(f => f.id === a.groupFloorId);
+                  const indexB = sortedFloors.findIndex(f => f.id === b.groupFloorId);
+                  return indexA - indexB;
+                })
+                .map((trace) => {
                 // 用途コード（annexedCode）ごとにグループ化して合計を計算
                 const usageGroups = new Map<string, {
                   annexedCode: string;

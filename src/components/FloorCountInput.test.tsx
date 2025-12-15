@@ -15,6 +15,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -30,6 +31,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={2}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -47,6 +49,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -55,7 +58,7 @@ describe('FloorCountInput', () => {
       fireEvent.change(aboveGroundInput, { target: { value: '5' } });
 
       await waitFor(() => {
-        expect(mockOnChange).toHaveBeenCalledWith(5, 0);
+        expect(mockOnChange).toHaveBeenCalledWith(5, 0, 0);
       });
     });
 
@@ -65,6 +68,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -73,7 +77,7 @@ describe('FloorCountInput', () => {
       fireEvent.change(basementInput, { target: { value: '3' } });
 
       await waitFor(() => {
-        expect(mockOnChange).toHaveBeenCalledWith(1, 3);
+        expect(mockOnChange).toHaveBeenCalledWith(1, 3, 0);
       });
     });
 
@@ -83,6 +87,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={5}
           basementCount={2}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -91,7 +96,7 @@ describe('FloorCountInput', () => {
       fireEvent.change(aboveGroundInput, { target: { value: '0' } });
 
       await waitFor(() => {
-        expect(mockOnChange).toHaveBeenCalledWith(0, 2);
+        expect(mockOnChange).toHaveBeenCalledWith(0, 2, 0);
       });
     });
   });
@@ -103,6 +108,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -124,6 +130,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -144,6 +151,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -164,6 +172,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -184,6 +193,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -202,7 +212,7 @@ describe('FloorCountInput', () => {
         expect(screen.queryByText(/0以上の整数である必要があります/i)).not.toBeInTheDocument();
       });
 
-      expect(mockOnChange).toHaveBeenCalledWith(5, 0);
+      expect(mockOnChange).toHaveBeenCalledWith(5, 0, 0);
     });
   });
 
@@ -213,6 +223,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -231,6 +242,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -249,6 +261,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -266,6 +279,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -283,6 +297,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -300,6 +315,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -322,6 +338,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -338,6 +355,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -354,6 +372,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -381,6 +400,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
           disabled={true}
         />
@@ -399,6 +419,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={1}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
           disabled={false}
         />
@@ -419,6 +440,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={0}
           basementCount={0}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );
@@ -436,6 +458,7 @@ describe('FloorCountInput', () => {
         <FloorCountInput
           aboveGroundCount={100}
           basementCount={50}
+          nonFloorCount={0}
           onChange={mockOnChange}
         />
       );

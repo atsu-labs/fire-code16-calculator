@@ -141,6 +141,40 @@ body {
   background-color: #fafafa;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  transition: all 0.2s;
+}
+
+/* 非階のスタイル */
+.floor-section.non-floor {
+  background-color: var(--floor-non-floor-bg);
+  border-left: 4px solid var(--floor-non-floor-border);
+}
+
+.floor-section.non-floor .floor-title {
+  border-bottom-color: var(--floor-non-floor-border);
+  color: var(--floor-non-floor-text);
+}
+
+/* 地上階のスタイル */
+.floor-section.above-ground {
+  background-color: var(--floor-above-ground-bg);
+  border-left: 4px solid var(--floor-above-ground-border);
+}
+
+.floor-section.above-ground .floor-title {
+  border-bottom-color: var(--floor-above-ground-border);
+  color: var(--floor-above-ground-text);
+}
+
+/* 地階のスタイル */
+.floor-section.basement {
+  background-color: var(--floor-basement-bg);
+  border-left: 4px solid var(--floor-basement-border);
+}
+
+.floor-section.basement .floor-title {
+  border-bottom-color: var(--floor-basement-border);
+  color: var(--floor-basement-text);
 }
 
 .floor-title {
@@ -213,6 +247,42 @@ body {
   font-weight: normal;
   color: #0066cc;
   white-space: nowrap;
+}
+
+/* 非階名の編集機能 */
+.floor-name.editable {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.floor-name.editable:hover {
+  background-color: #f0f0f0;
+}
+
+.floor-name .edit-icon {
+  font-size: 0.7em;
+  margin-left: 0.3em;
+  opacity: 0.6;
+}
+
+.floor-name-edit {
+  display: inline-block;
+}
+
+.floor-name-input {
+  font-size: 1em;
+  padding: 2px 6px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  outline: none;
+  min-width: 120px;
+}
+
+.floor-name-input:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
 .results-section {

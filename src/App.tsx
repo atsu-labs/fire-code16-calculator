@@ -3,7 +3,7 @@
  * 消防法に基づく建物用途別面積計算機
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AppStateProvider, useAppState } from './contexts';
 import { useFloorActions } from './contexts/FloorActions';
 import { FloorManager } from './components/FloorManager';
@@ -12,12 +12,18 @@ import { CommonAreaInputs } from './components/CommonAreaInputs';
 import { UsageGroupSelector } from './components/UsageGroupSelector';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { AppControls } from './components/AppControls';
+import { sortFloors } from './utils/floorSorter';
 import './App.css';
 
 function AppContent() {
   const { state } = useAppState();
-  const { copyFloorData } = useFloorActions();
+  const { copyFloorData, updateFloorName } = useFloorActions();
   const [copyingFloorId, setCopyingFloorId] = useState<string | null>(null);
+  const [editingFloorId, setEditingFloorId] = useState<string | null>(null);
+  const [editingFloorName, setEditingFloorName] = useState<string>('');
+
+  // 階をソート（非階 → 地上階 → 地階）
+  const sortedFloors = useMemo(() => sortFloors(state.building.floors), [state.building.floors]);
 
   // 初期ロード時にスクロール位置を最上部に固定
   useEffect(() => {
@@ -42,7 +48,7 @@ function AppContent() {
         <section className="input-section">
           <FloorManager />
           
-          {state.building.floors.map((floor) => {
+          {sortedFloors.map((floor) => {
             // この階の専用部面積の合計を計算
             const totalExclusiveArea = floor.usages.reduce(
               (sum, usage) => sum + usage.exclusiveArea,
@@ -84,10 +90,75 @@ function AppContent() {
               }
             };
 
+            // 非階の名前編集ハンドラ
+            const handleEditStart = () => {
+              if (floor.floorType === 'non-floor') {
+                setEditingFloorId(floor.id);
+                setEditingFloorName(floor.name);
+              }
+            };
+
+            const handleEditSave = async () => {
+              if (!editingFloorName.trim()) {
+                alert('階名を入力してください');
+                return;
+              }
+
+              const result = await updateFloorName(floor.id, editingFloorName);
+              if (result.success) {
+                setEditingFloorId(null);
+                setEditingFloorName('');
+              } else {
+                alert(result.error.message);
+              }
+            };
+
+            const handleEditCancel = () => {
+              setEditingFloorId(null);
+              setEditingFloorName('');
+            };
+
+            const handleEditKeyDown = (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter') {
+                handleEditSave();
+              } else if (e.key === 'Escape') {
+                handleEditCancel();
+              }
+            };
+
+            // 階種別に応じたクラス名を決定
+            const floorTypeClass = floor.floorType === 'non-floor' 
+              ? 'non-floor' 
+              : floor.floorType === 'basement' 
+                ? 'basement' 
+                : 'above-ground';
+
             return (
-              <div key={floor.id} className="floor-section">
+              <div key={floor.id} className={`floor-section ${floorTypeClass}`}>
                 <h3 className="floor-title">
-                  <span className="floor-name">{floor.name}</span>
+                  {editingFloorId === floor.id ? (
+                    <span className="floor-name-edit">
+                      <input
+                        type="text"
+                        value={editingFloorName}
+                        onChange={(e) => setEditingFloorName(e.target.value)}
+                        onKeyDown={handleEditKeyDown}
+                        onBlur={handleEditSave}
+                        autoFocus
+                        className="floor-name-input"
+                      />
+                    </span>
+                  ) : (
+                    <span 
+                      className={`floor-name ${floor.floorType === 'non-floor' ? 'editable' : ''}`}
+                      onClick={handleEditStart}
+                      onDoubleClick={handleEditStart}
+                      title={floor.floorType === 'non-floor' ? 'クリックして名前を編集' : ''}
+                    >
+                      {floor.name}
+                      {floor.floorType === 'non-floor' && <span className="edit-icon">✏️</span>}
+                    </span>
+                  )}
                   <span className="floor-actions">
                     {copyingFloorId === floor.id ? (
                       <button

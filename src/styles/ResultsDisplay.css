@@ -96,6 +96,25 @@
   min-width: 80px;
 }
 
+/* 階種別ごとの行ヘッダー色分け */
+.matrix-table .row-header.non-floor {
+  background-color: var(--floor-non-floor-bg);
+  color: var(--floor-non-floor-text);
+  border-left: 3px solid var(--floor-non-floor-border);
+}
+
+.matrix-table .row-header.above-ground {
+  background-color: var(--floor-above-ground-bg);
+  color: var(--floor-above-ground-text);
+  border-left: 3px solid var(--floor-above-ground-border);
+}
+
+.matrix-table .row-header.basement {
+  background-color: var(--floor-basement-bg);
+  color: var(--floor-basement-text);
+  border-left: 3px solid var(--floor-basement-border);
+}
+
 .matrix-table .usage-header {
   background-color: #0066cc;
   color: white;

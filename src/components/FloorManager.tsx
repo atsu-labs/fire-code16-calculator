@@ -13,22 +13,24 @@ import type { Floor } from '../types';
 import '../styles/FloorManager.css';
 
 /**
- * deriveFloorCounts - 既存の階データから地上階数と地階数を逆算
+ * deriveFloorCounts - 既存の階データから地上階数・地階数・非階数を逆算
  * 
  * @param floors - 階配列
- * @returns 地上階数と地階数のオブジェクト
+ * @returns 地上階数、地階数、非階数のオブジェクト
  * 
  * @example
  * const counts = deriveFloorCounts([
  *   { id: '1', name: '1階', floorType: 'above-ground', ... },
- *   { id: '2', name: '地下1階', floorType: 'basement', ... }
+ *   { id: '2', name: '地下1階', floorType: 'basement', ... },
+ *   { id: '3', name: '非階1', floorType: 'non-floor', ... }
  * ]);
- * // returns { aboveGround: 1, basement: 1 }
+ * // returns { aboveGround: 1, basement: 1, nonFloor: 1 }
  */
-function deriveFloorCounts(floors: Floor[]): { aboveGround: number; basement: number } {
-  const aboveGround = floors.filter(f => f.floorType !== 'basement').length;
+function deriveFloorCounts(floors: Floor[]): { aboveGround: number; basement: number; nonFloor: number } {
+  const aboveGround = floors.filter(f => f.floorType === 'above-ground' || f.floorType === undefined).length;
   const basement = floors.filter(f => f.floorType === 'basement').length;
-  return { aboveGround, basement };
+  const nonFloor = floors.filter(f => f.floorType === 'non-floor').length;
+  return { aboveGround, basement, nonFloor };
 }
 
 /**
@@ -41,8 +43,8 @@ export function FloorManager() {
   const { state } = useAppState();
   const { setFloorCounts } = useFloorActions();
 
-  // 既存階データから地上階数と地階数を逆算（メモ化）
-  const { aboveGround, basement } = useMemo(
+  // 既存階データから地上階数・地階数・非階数を逆算（メモ化）
+  const { aboveGround, basement, nonFloor } = useMemo(
     () => deriveFloorCounts(state.building.floors),
     [state.building.floors]
   );
@@ -52,8 +54,8 @@ export function FloorManager() {
    * FloorCountInputから通知された階数変更をsetFloorCountsアクションに伝達
    */
   const handleFloorCountsChange = useCallback(
-    async (aboveGroundCount: number, basementCount: number) => {
-      const result = await setFloorCounts(aboveGroundCount, basementCount);
+    async (aboveGroundCount: number, basementCount: number, nonFloorCount: number) => {
+      const result = await setFloorCounts(aboveGroundCount, basementCount, nonFloorCount);
       if (!result.success) {
         console.error('階数変更に失敗:', result.error);
       }
@@ -69,6 +71,7 @@ export function FloorManager() {
       <FloorCountInput
         aboveGroundCount={aboveGround}
         basementCount={basement}
+        nonFloorCount={nonFloor}
         onChange={handleFloorCountsChange}
       />
     </div>

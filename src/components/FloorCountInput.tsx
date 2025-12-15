@@ -16,18 +16,21 @@ export interface FloorCountInputProps {
   aboveGroundCount: number;
   /** 地階数 */
   basementCount: number;
+  /** 非階数 */
+  nonFloorCount: number;
   /** 階数変更時のコールバック */
-  onChange: (aboveGround: number, basement: number) => void;
+  onChange: (aboveGround: number, basement: number, nonFloor: number) => void;
   /** 無効化フラグ */
   disabled?: boolean;
 }
 
 /**
- * 地上階数・地階数の入力コンポーネント
+ * 地上階数・地階数・非階数の入力コンポーネント
  */
 export function FloorCountInput({
   aboveGroundCount,
   basementCount,
+  nonFloorCount,
   onChange,
   disabled = false,
 }: FloorCountInputProps) {
@@ -36,10 +39,12 @@ export function FloorCountInput({
   // ローカルステート（入力値を文字列で管理）
   const [aboveGroundInput, setAboveGroundInput] = useState(String(aboveGroundCount));
   const [basementInput, setBasementInput] = useState(String(basementCount));
+  const [nonFloorInput, setNonFloorInput] = useState(String(nonFloorCount));
 
   // エラーメッセージ
   const [aboveGroundError, setAboveGroundError] = useState<string | undefined>();
   const [basementError, setBasementError] = useState<string | undefined>();
+  const [nonFloorError, setNonFloorError] = useState<string | undefined>();
 
   // Propsが変更された場合、ローカルステートを同期
   useEffect(() => {
@@ -49,6 +54,10 @@ export function FloorCountInput({
   useEffect(() => {
     setBasementInput(String(basementCount));
   }, [basementCount]);
+
+  useEffect(() => {
+    setNonFloorInput(String(nonFloorCount));
+  }, [nonFloorCount]);
 
   /**
    * 地上階数の変更ハンドラ
@@ -70,7 +79,7 @@ export function FloorCountInput({
 
     if (result.success) {
       setAboveGroundError(undefined);
-      onChange(numValue, basementCount);
+      onChange(numValue, basementCount, nonFloorCount);
     } else {
       setAboveGroundError(result.error.message);
     }
@@ -96,9 +105,35 @@ export function FloorCountInput({
 
     if (result.success) {
       setBasementError(undefined);
-      onChange(aboveGroundCount, numValue);
+      onChange(aboveGroundCount, numValue, nonFloorCount);
     } else {
       setBasementError(result.error.message);
+    }
+  };
+
+  /**
+   * 非階数の変更ハンドラ
+   */
+  const handleNonFloorChange = (value: string) => {
+    setNonFloorInput(value);
+
+    // 空文字列または非数値文字列のチェック
+    if (value === '' || isNaN(Number(value))) {
+      setNonFloorError('非階数は有効な数値である必要があります');
+      return;
+    }
+
+    // 数値に変換
+    const numValue = Number(value);
+
+    // バリデーション
+    const result = validationService.validateInteger(numValue, '非階数');
+
+    if (result.success) {
+      setNonFloorError(undefined);
+      onChange(aboveGroundCount, basementCount, numValue);
+    } else {
+      setNonFloorError(result.error.message);
     }
   };
 
@@ -154,6 +189,33 @@ export function FloorCountInput({
             aria-live="polite"
           >
             {basementError}
+          </div>
+        )}
+      </div>
+
+      {/* 非階数入力 */}
+      <div className="floor-count-input__field">
+        <label htmlFor="non-floor-count">非階数</label>
+        <input
+          id="non-floor-count"
+          type="number"
+          min="0"
+          step="1"
+          value={nonFloorInput}
+          onChange={(e) => handleNonFloorChange(e.target.value)}
+          disabled={disabled}
+          aria-label="非階数を入力してください（PH、M階など）"
+          aria-invalid={!!nonFloorError}
+          aria-describedby={nonFloorError ? 'non-floor-error' : undefined}
+        />
+        {nonFloorError && (
+          <div
+            id="non-floor-error"
+            className="floor-count-input__error"
+            role="alert"
+            aria-live="polite"
+          >
+            {nonFloorError}
           </div>
         )}
       </div>

@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { useAppState } from './useAppState';
 import { type Floor, type ValidationError, type Result, generateUUID } from '../types';
 import { ValidationService } from '../services/ValidationService';
-import { generateFloors } from '../utils/floorGenerator';
+import { generateFloors, generateNonFloors } from '../utils/floorGenerator';
 import { calculateFloorDiff } from '../utils/floorDiffCalculator';
 import { cleanupUsageGroupsAfterFloorDeletion } from '../utils/cascadeDeleteHelper';
 
@@ -222,18 +222,20 @@ export function useFloorActions() {
   );
 
   /**
-   * setFloorCounts - 地上階数と地階数を設定し、階データを自動生成・更新
+   * setFloorCounts - 地上階数・地階数・非階数を設定し、階データを自動生成・更新
    * 
    * @param aboveGroundCount - 地上階数（0以上の整数）
    * @param basementCount - 地階数（0以上の整数）
+   * @param nonFloorCount - 非階数（0以上の整数、オプショナル）
    * @returns 処理結果
    */
   const setFloorCounts = useCallback(
     async (
       aboveGroundCount: number,
-      basementCount: number
+      basementCount: number,
+      nonFloorCount: number = 0
     ): Promise<Result<void, ValidationError>> => {
-      // 最低1階制約のバリデーション
+      // 最低1階制約のバリデーション（非階は含めない）
       if (aboveGroundCount + basementCount < 1) {
         return {
           success: false,
@@ -245,8 +247,11 @@ export function useFloorActions() {
         };
       }
 
-      // 目標階配列を生成
-      const targetFloors = generateFloors(aboveGroundCount, basementCount);
+      // 目標階配列を生成（非階 + 地上階 + 地階）
+      const targetFloors = [
+        ...generateFloors(aboveGroundCount, basementCount),
+        ...generateNonFloors(nonFloorCount),
+      ];
 
       // 現在階と目標階の差分を検出
       const { mergedFloors, deletedFloorIds } = calculateFloorDiff(
@@ -299,11 +304,66 @@ export function useFloorActions() {
     [dispatch, state.building.floors]
   );
 
+  /**
+   * updateFloorName - 階の名前を更新
+   * 
+   * @param floorId - 階ID
+   * @param newName - 新しい階名
+   * @returns 処理結果
+   */
+  const updateFloorName = useCallback(
+    async (floorId: string, newName: string): Promise<Result<Floor, ValidationError>> => {
+      // バリデーション
+      const nameValidation = validationService.validateFloorName(newName);
+      if (!nameValidation.success) {
+        return nameValidation;
+      }
+
+      // 重複チェック
+      const isDuplicate = state.building.floors.some(
+        f => f.id !== floorId && f.name === newName
+      );
+      if (isDuplicate) {
+        return {
+          success: false,
+          error: {
+            type: 'DUPLICATE',
+            field: 'name',
+            message: '同じ名前の階が既に存在します',
+          },
+        };
+      }
+
+      // 更新
+      dispatch({
+        type: 'UPDATE_FLOOR',
+        payload: { floorId, updates: { name: newName } },
+      });
+
+      // 更新後の階を取得
+      const updatedFloor = state.building.floors.find((f) => f.id === floorId);
+      if (!updatedFloor) {
+        return {
+          success: false,
+          error: {
+            type: 'REQUIRED_FIELD',
+            field: 'floorId',
+            message: '階が見つかりません',
+          },
+        };
+      }
+
+      return { success: true, value: { ...updatedFloor, name: newName } };
+    },
+    [state.building.floors, dispatch]
+  );
+
   return {
     addFloor,
     updateFloor,
     deleteFloor,
     setFloorCounts,
     copyFloorData,
+    updateFloorName,
   };
 }
