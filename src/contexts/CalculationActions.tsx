@@ -113,29 +113,51 @@ export function useCalculationActions() {
       allBuildingUsages.forEach(u => usageCodeToName.set(u.annexedCode, u.annexedName));
       
       for (const floor of building.floors) {
-        if (floor.buildingCommonArea > 0 && totalExclusiveArea > 0) {
+        if (floor.buildingCommonArea > 0) {
           const traceDistributions: DistributionTrace['buildingCommonTraces'][number]['distributions'] = [];
           const floorDistributions = new Map<string, number>();
           
-          // この階の建物共用部を、全建物の全用途コードに按分
-          usageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
-            const ratio = usageCodeTotal / totalExclusiveArea;
-            const distributed = ratio * floor.buildingCommonArea;
-            
-            // この階の用途コード別按分を記録（この階にのみ加算される）
-            floorDistributions.set(annexedCode, distributed);
-            
-            // 経過表用のデータを収集
-            traceDistributions.push({
-              usageId: '', // 用途コード単位なのでusageIdは不要
-              annexedCode: annexedCode,
-              annexedName: usageCodeToName.get(annexedCode) || '',
-              floorId: floor.id,
-              floorName: floor.name,
-              distributedArea: distributed,
-              ratio: ratio,
+          if (totalExclusiveArea > 0) {
+            // この階の建物共用部を、全建物の全用途コードに按分
+            usageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
+              const ratio = usageCodeTotal / totalExclusiveArea;
+              const distributed = ratio * floor.buildingCommonArea;
+              
+              // この階の用途コード別按分を記録（この階にのみ加算される）
+              floorDistributions.set(annexedCode, distributed);
+              
+              // 経過表用のデータを収集
+              traceDistributions.push({
+                usageId: '', // 用途コード単位なのでusageIdは不要
+                annexedCode: annexedCode,
+                annexedName: usageCodeToName.get(annexedCode) || '',
+                floorId: floor.id,
+                floorName: floor.name,
+                distributedArea: distributed,
+                ratio: ratio,
+              });
             });
-          });
+          } else if (usageCodeTotals.size > 0) {
+            // 専有部分がない場合は等分配
+            const equalRatio = 1 / usageCodeTotals.size;
+            usageCodeTotals.forEach((_, annexedCode) => {
+              const distributed = equalRatio * floor.buildingCommonArea;
+              
+              // この階の用途コード別按分を記録（この階にのみ加算される）
+              floorDistributions.set(annexedCode, distributed);
+              
+              // 経過表用のデータを収集
+              traceDistributions.push({
+                usageId: '', // 用途コード単位なのでusageIdは不要
+                annexedCode: annexedCode,
+                annexedName: usageCodeToName.get(annexedCode) || '',
+                floorId: floor.id,
+                floorName: floor.name,
+                distributedArea: distributed,
+                ratio: equalRatio,
+              });
+            });
+          }
           
           buildingCommonByFloorAndCode.set(floor.id, floorDistributions);
           
@@ -206,17 +228,6 @@ export function useCalculationActions() {
             0
           );
 
-          if (totalGroupExclusive === 0) {
-            dispatch({ type: 'SET_CALCULATING', payload: false });
-            return {
-              success: false,
-              error: {
-                type: 'ZERO_EXCLUSIVE_AREA_SUM',
-                groupId: group.id,
-              },
-            };
-          }
-
           const traceDistributions: DistributionTrace['usageGroupTraces'][number]['distributions'] = [];
           
           // グループ内の用途コードに按分し、この階に記録
@@ -225,34 +236,67 @@ export function useCalculationActions() {
           }
           const floorGroupDistributions = usageGroupByFloorAndCode.get(floor.id)!;
           
-          groupUsageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
-            const ratio = usageCodeTotal / totalGroupExclusive;
-            const distributed = ratio * group.commonArea;
-            
-            // この階の用途コード別按分を記録（複数グループある場合は加算）
-            const current = floorGroupDistributions.get(annexedCode) || { 
-              total: 0, 
-              details: [] 
-            };
-            current.total += distributed;
-            current.details.push({
-              sourceId: group.id,
-              sourceName: `${floor.name} グループ`,
-              sourceType: 'group' as const,
-              distributedArea: distributed,
-              ratio: ratio,
+          // 専有部分がない場合は等分配
+          if (totalGroupExclusive === 0) {
+            const equalRatio = 1 / groupUsageCodeTotals.size;
+            groupUsageCodeTotals.forEach((_, annexedCode) => {
+              const distributed = equalRatio * group.commonArea;
+              
+              // この階の用途コード別按分を記録（複数グループある場合は加算）
+              const current = floorGroupDistributions.get(annexedCode) || { 
+                total: 0, 
+                details: [] 
+              };
+              current.total += distributed;
+              current.details.push({
+                sourceId: group.id,
+                sourceName: `${floor.name} グループ`,
+                sourceType: 'group' as const,
+                distributedArea: distributed,
+                ratio: equalRatio,
+              });
+              floorGroupDistributions.set(annexedCode, current);
+              
+              // 経過表用のデータを収集
+              traceDistributions.push({
+                usageId: '', // 用途コード単位なのでusageIdは不要
+                annexedCode: annexedCode,
+                annexedName: usageCodeToName.get(annexedCode) || '',
+                ratio: equalRatio,
+                distributedArea: distributed,
+              });
             });
-            floorGroupDistributions.set(annexedCode, current);
-            
-            // 経過表用のデータを収集
-            traceDistributions.push({
-              usageId: '', // 用途コード単位なのでusageIdは不要
-              annexedCode: annexedCode,
-              annexedName: usageCodeToName.get(annexedCode) || '',
-              distributedArea: distributed,
-              ratio: ratio,
+          } else {
+            // 専有部分面積比で按分
+            groupUsageCodeTotals.forEach((usageCodeTotal, annexedCode) => {
+              const ratio = usageCodeTotal / totalGroupExclusive;
+              const distributed = ratio * group.commonArea;
+              
+              // この階の用途コード別按分を記録（複数グループある場合は加算）
+              const current = floorGroupDistributions.get(annexedCode) || { 
+                total: 0, 
+                details: [] 
+              };
+              current.total += distributed;
+              current.details.push({
+                sourceId: group.id,
+                sourceName: `${floor.name} グループ`,
+                sourceType: 'group' as const,
+                distributedArea: distributed,
+                ratio: ratio,
+              });
+              floorGroupDistributions.set(annexedCode, current);
+              
+              // 経過表用のデータを収集
+              traceDistributions.push({
+                usageId: '', // 用途コード単位なのでusageIdは不要
+                annexedCode: annexedCode,
+                annexedName: usageCodeToName.get(annexedCode) || '',
+                distributedArea: distributed,
+                ratio: ratio,
+              });
             });
-          });
+          }
           
           usageGroupTraces.push({
             groupId: group.id,
@@ -279,19 +323,6 @@ export function useCalculationActions() {
   const floorResultsMap = new Map<string, UsageAreaBreakdown[]>();
       
       for (const floor of building.floors) {
-        // 階に用途がないが階共用部面積がある場合はエラー
-        // （建物全体共用部面積のみの場合は許可）
-        if (floor.usages.length === 0 && floor.floorCommonArea > 0) {
-          dispatch({ type: 'SET_CALCULATING', payload: false });
-          return {
-            success: false,
-            error: {
-              type: 'ZERO_EXCLUSIVE_AREA_SUM',
-              floorId: floor.id,
-            },
-          };
-        }
-
         // 階に用途が1つしかない場合で階共用部面積がある場合はエラー
         // （按分する必要がないため）
         if (floor.usages.length === 1 && floor.floorCommonArea > 0) {
@@ -306,7 +337,76 @@ export function useCalculationActions() {
         }
 
         if (floor.usages.length === 0) {
-          floorResultsMap.set(floor.id, []); // 空の結果を設定
+          // 用途がなくても建物共用部やグループ共用部があれば内訳を作成
+          const allUsageCodesInFloor = new Set<string>();
+          
+          // この階の建物共用部から按分を受ける用途コード
+          const thisFloorDistributions = buildingCommonByFloorAndCode.get(floor.id);
+          if (thisFloorDistributions) {
+            thisFloorDistributions.forEach((_, code) => {
+              allUsageCodesInFloor.add(code);
+            });
+          }
+          
+          // この階のグループ共用部から按分を受ける用途コード
+          const thisFloorGroupDistributions = usageGroupByFloorAndCode.get(floor.id);
+          if (thisFloorGroupDistributions) {
+            thisFloorGroupDistributions.forEach((_, code) => {
+              allUsageCodesInFloor.add(code);
+            });
+          }
+          
+          if (allUsageCodesInFloor.size > 0) {
+            // 仮想用途の内訳を作成
+            const breakdowns: UsageAreaBreakdown[] = [];
+            allUsageCodesInFloor.forEach(annexedCode => {
+              // 建物共用部按分
+              let buildingCommon = 0;
+              const buildingCommonDetails: DistributionDetail[] = [];
+              if (thisFloorDistributions && thisFloorDistributions.has(annexedCode)) {
+                const dist = thisFloorDistributions.get(annexedCode) || 0;
+                buildingCommon = dist;
+                buildingCommonDetails.push({
+                  sourceId: floor.id,
+                  sourceName: floor.name,
+                  sourceType: 'building' as const,
+                  distributedArea: dist,
+                  ratio: dist / (floor.buildingCommonArea || 1),
+                });
+              }
+              
+              // グループ共用部按分
+              let usageGroupCommon = 0;
+              const usageGroupDetailsForUsage: DistributionDetail[] = [];
+              if (thisFloorGroupDistributions && thisFloorGroupDistributions.has(annexedCode)) {
+                const groupData = thisFloorGroupDistributions.get(annexedCode)!;
+                usageGroupCommon = groupData.total;
+                usageGroupDetailsForUsage.push(...groupData.details);
+              }
+              
+              const total = Math.round((buildingCommon + usageGroupCommon) * 100) / 100;
+
+              const breakdown: UsageAreaBreakdown = {
+                usageId: `virtual-${floor.id}-${annexedCode}`,
+                annexedCode: annexedCode,
+                annexedName: usageCodeToName.get(annexedCode) || '',
+                exclusiveArea: 0,
+                floorCommonArea: 0,
+                buildingCommonArea: Math.round(buildingCommon * 100) / 100,
+                buildingCommonDetails: buildingCommonDetails,
+                usageGroupCommonArea: Math.round(usageGroupCommon * 100) / 100,
+                usageGroupDetails: usageGroupDetailsForUsage,
+                totalArea: total,
+              };
+
+              breakdowns.push(breakdown);
+            });
+            
+            floorResultsMap.set(floor.id, breakdowns);
+            allFloorResults.push(breakdowns);
+          } else {
+            floorResultsMap.set(floor.id, []); // 空の結果を設定
+          }
           continue;
         }
 

@@ -51,14 +51,29 @@ export class CalculationEngine {
       0
     );
 
-    // 専用部分面積の合計が0の場合はエラー
+    // 専用部分面積の合計が0の場合は等分配
     if (totalExclusiveArea === 0) {
-      return {
-        success: false,
-        error: {
-          type: "ZERO_EXCLUSIVE_AREA_SUM",
-        },
-      };
+      if (floorUsages.length === 0) {
+        return { success: true, value: new Map() };
+      }
+
+      // 累積丸めで等分配
+      const result = new Map<string, number>();
+      let cumulativeExact = 0;
+      let cumulativeRounded = 0;
+
+      floorUsages.forEach((usage) => {
+        const ratio = 1 / floorUsages.length;
+        cumulativeExact += ratio * floorCommonArea;
+
+        const newCumulativeRounded = this.round(cumulativeExact);
+        const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+        cumulativeRounded = newCumulativeRounded;
+        result.set(usage.id, distributedArea);
+      });
+
+      return { success: true, value: result };
     }
 
     // 累積丸めで各用途に案分
@@ -111,14 +126,29 @@ export class CalculationEngine {
       0
     );
 
-    // 専用部分面積の総合計が0の場合はエラー
+    // 専用部分面積の総合計が0の場合は等分配
     if (totalExclusiveArea === 0) {
-      return {
-        success: false,
-        error: {
-          type: "ZERO_EXCLUSIVE_AREA_SUM",
-        },
-      };
+      if (allUsages.length === 0) {
+        return { success: true, value: new Map() };
+      }
+
+      // 累積丸めで等分配
+      const result = new Map<string, number>();
+      let cumulativeExact = 0;
+      let cumulativeRounded = 0;
+
+      allUsages.forEach((usage) => {
+        const ratio = 1 / allUsages.length;
+        cumulativeExact += ratio * buildingCommonArea;
+
+        const newCumulativeRounded = this.round(cumulativeExact);
+        const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+        cumulativeRounded = newCumulativeRounded;
+        result.set(usage.id, distributedArea);
+      });
+
+      return { success: true, value: result };
     }
 
     // 累積丸めで各用途に案分
@@ -189,15 +219,29 @@ export class CalculationEngine {
       0
     );
 
-    // グループ内の専用部分面積の合計が0の場合はエラー
+    // グループ内の専用部分面積の合計が0の場合は等分配
     if (totalExclusiveArea === 0) {
-      return {
-        success: false,
-        error: {
-          type: "ZERO_EXCLUSIVE_AREA_SUM",
-          groupId: usageGroup.id,
-        },
-      };
+      if (groupUsages.length === 0) {
+        return { success: true, value: new Map() };
+      }
+
+      // 累積丸めで等分配
+      const result = new Map<string, number>();
+      let cumulativeExact = 0;
+      let cumulativeRounded = 0;
+
+      groupUsages.forEach((usage) => {
+        const ratio = 1 / groupUsages.length;
+        cumulativeExact += ratio * usageGroup.commonArea;
+
+        const newCumulativeRounded = this.round(cumulativeExact);
+        const distributedArea = newCumulativeRounded - cumulativeRounded;
+
+        cumulativeRounded = newCumulativeRounded;
+        result.set(usage.id, distributedArea);
+      });
+
+      return { success: true, value: result };
     }
 
     // 累積丸めでグループ内の各用途に案分

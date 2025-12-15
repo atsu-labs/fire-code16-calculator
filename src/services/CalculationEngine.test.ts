@@ -234,7 +234,7 @@ describe("CalculationEngine", () => {
     });
 
     describe("エラーケース", () => {
-      it("should fail when all exclusive areas are zero", () => {
+      it("should distribute equally when all exclusive areas are zero", () => {
         const usages: Usage[] = [
           {
             id: "u1",
@@ -253,21 +253,28 @@ describe("CalculationEngine", () => {
 
         const result = engine.calculateFloorCommonArea(usages, floorCommonArea);
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error.type).toBe("ZERO_EXCLUSIVE_AREA_SUM");
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // 等分配: 50 / 2 = 25
+          expect(result.value.get("u1")).toBe(25);
+          expect(result.value.get("u2")).toBe(25);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) + (result.value.get("u2") || 0);
+          expect(sum).toBe(50);
         }
       });
 
-      it("should fail with empty usages array and non-zero common area", () => {
+      it("should return empty map with empty usages array and non-zero common area", () => {
         const usages: Usage[] = [];
         const floorCommonArea = 50;
 
         const result = engine.calculateFloorCommonArea(usages, floorCommonArea);
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error.type).toBe("ZERO_EXCLUSIVE_AREA_SUM");
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.size).toBe(0);
         }
       });
 
@@ -281,6 +288,50 @@ describe("CalculationEngine", () => {
         expect(result.success).toBe(true);
         if (result.success) {
           expect(result.value.size).toBe(0);
+        }
+      });
+
+      it("should use cumulative rounding for equal distribution with zero exclusive areas", () => {
+        const usages: Usage[] = [
+          {
+            id: "u1",
+            annexedCode: "annex01_i",
+            annexedName: "１項イ",
+            exclusiveArea: 0,
+          },
+          {
+            id: "u2",
+            annexedCode: "annex02_i",
+            annexedName: "２項イ",
+            exclusiveArea: 0,
+          },
+          {
+            id: "u3",
+            annexedCode: "annex03_i",
+            annexedName: "３項イ",
+            exclusiveArea: 0,
+          },
+        ];
+        const floorCommonArea = 100;
+
+        const result = engine.calculateFloorCommonArea(usages, floorCommonArea);
+
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // 累積丸めによる等分配:
+          // u1: 100/3 = 33.333... → 累積 33.33 → 差分 33.33
+          // u2: 100/3 = 33.333... → 累積 66.67 → 差分 33.34
+          // u3: 100/3 = 33.333... → 累積 100.00 → 差分 33.33
+          expect(result.value.get("u1")).toBe(33.33);
+          expect(result.value.get("u2")).toBe(33.34);
+          expect(result.value.get("u3")).toBe(33.33);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) +
+            (result.value.get("u2") || 0) +
+            (result.value.get("u3") || 0);
+          expect(sum).toBe(100);
         }
       });
     });
@@ -470,7 +521,7 @@ describe("CalculationEngine", () => {
     });
 
     describe("エラーケース", () => {
-      it("should fail when all exclusive areas are zero", () => {
+      it("should distribute equally when all exclusive areas are zero", () => {
         const allUsages: Usage[] = [
           {
             id: "u1",
@@ -492,13 +543,20 @@ describe("CalculationEngine", () => {
           buildingCommonArea
         );
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error.type).toBe("ZERO_EXCLUSIVE_AREA_SUM");
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // 等分配: 100 / 2 = 50
+          expect(result.value.get("u1")).toBe(50);
+          expect(result.value.get("u2")).toBe(50);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) + (result.value.get("u2") || 0);
+          expect(sum).toBe(100);
         }
       });
 
-      it("should fail with empty usages array and non-zero common area", () => {
+      it("should return empty map with empty usages array and non-zero common area", () => {
         const allUsages: Usage[] = [];
         const buildingCommonArea = 100;
 
@@ -507,7 +565,10 @@ describe("CalculationEngine", () => {
           buildingCommonArea
         );
 
-        expect(result.success).toBe(false);
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.value.size).toBe(0);
+        }
       });
     });
   });
@@ -721,7 +782,7 @@ describe("CalculationEngine", () => {
     });
 
     describe("エラーケース", () => {
-      it("should fail when all group usages have zero exclusive area", () => {
+      it("should distribute equally when all group usages have zero exclusive area", () => {
         const usagesWithZero: Usage[] = [
           {
             id: "u1",
@@ -754,12 +815,16 @@ describe("CalculationEngine", () => {
           usageGroup
         );
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error.type).toBe("ZERO_EXCLUSIVE_AREA_SUM");
-          if (result.error.type === "ZERO_EXCLUSIVE_AREA_SUM") {
-            expect(result.error.groupId).toBe("g1");
-          }
+        expect(result.success).toBe(true);
+        if (result.success) {
+          // 等分配: 50 / 2 = 25
+          expect(result.value.get("u1")).toBe(25);
+          expect(result.value.get("u2")).toBe(25);
+
+          // 合計が元の値と一致することを確認
+          const sum =
+            (result.value.get("u1") || 0) + (result.value.get("u2") || 0);
+          expect(sum).toBe(50);
         }
       });
 
