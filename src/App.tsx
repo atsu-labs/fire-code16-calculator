@@ -3,7 +3,7 @@
  * 消防法に基づく建物用途別面積計算機
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppStateProvider, useAppState } from './contexts';
 import { useFloorActions } from './contexts/FloorActions';
 import { FloorManager } from './components/FloorManager';
@@ -18,6 +18,11 @@ function AppContent() {
   const { state } = useAppState();
   const { copyFloorData } = useFloorActions();
   const [copyingFloorId, setCopyingFloorId] = useState<string | null>(null);
+
+  // 初期ロード時にスクロール位置を最上部に固定
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="app">

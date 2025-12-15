@@ -29,6 +29,7 @@
   font-size: 0.85rem;
   min-height: 32px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .floor-count-input__field input:focus {

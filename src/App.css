@@ -2,26 +2,36 @@
  * メインアプリケーションのスタイル
  */
 
-/* ルート要素のスムーススクロール */
+/* ルート要素の設定 */
 html {
-  scroll-behavior: smooth;
+  /* スムーススクロールを無効化してヘッダー分のスクロールを防止 */
+  scroll-behavior: auto;
+  height: 100%;
 }
 
 body {
-  padding-top: 50px; /* ヘッダーの高さ分の余白を縮小 */
+  height: 100%;
   margin: 0;
+  overflow: hidden; /* bodyレベルではスクロールを無効化（appレベルで制御） */
+  box-sizing: border-box;
 }
 
 .app {
   max-width: 1600px;
+  height: 100vh; /* ビューポート全体の高さ */
   margin: 0 auto;
   padding: 0.25rem;
+  padding-top: 60px; /* ヘッダーの高さ分の余白を確保 */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.3;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* appレベルでオーバーフローを防ぐ */
 }
 
 .app-header {
@@ -99,14 +109,17 @@ body {
 .app-main {
   display: grid;
   grid-template-columns: 1fr;
+  grid-template-rows: 1fr; /* 行の高さを親要素に合わせる */
   gap: 0.3rem;
   /* デスクトップでの高さ設定（ヘッダーを除いた画面全体） */
-  height: calc(100vh - 50px);
+  flex: 1;
+  min-height: 0; /* flexコンテナ内でのオーバーフロー処理を有効化 */
 }
 
 @media (min-width: 768px) {
   .app-main {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr; /* 2カラムでも行の高さは同じ */
   }
 }
 
@@ -116,7 +129,11 @@ body {
   gap: 0.3rem;
   /* 独立したスクロール領域 */
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.5rem;
+  /* Gridアイテムとしてスクロールを有効化 */
+  min-height: 0;
+  height: 100%; /* Grid行の高さに合わせる */
 }
 
 .floor-section {
@@ -201,22 +218,30 @@ body {
 .results-section {
   /* デスクトップでの独立したスクロール領域 */
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.5rem;
+  /* Gridアイテムとしてスクロールを有効化 */
+  min-height: 0;
+  height: 100%; /* Grid行の高さに合わせる */
 }
 
 @media (max-width: 767px) {
-  body {
-    padding-top: 50px; /* モバイルでもヘッダー分の余白 */
+  .app {
+    padding-top: 80px; /* モバイルでは少し余裕を持たせる */
+    height: auto; /* モバイルでは高さ制限を解除 */
   }
 
   .app-main {
     height: auto; /* モバイルでは高さ制限を解除 */
+    overflow: visible; /* モバイルでは各セクションが自然にスクロール */
   }
 
   .input-section,
   .results-section {
     overflow-y: visible; /* モバイルでは通常のスクロール */
+    overflow-x: visible;
     padding-right: 0;
+    min-height: auto; /* モバイルでは高さ制限なし */
   }
 
   .app-header h1 {

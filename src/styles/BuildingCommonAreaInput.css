@@ -37,6 +37,7 @@
   border-radius: 4px;
   font-size: 0.85rem;
   max-width: 250px;
+  box-sizing: border-box;
 }
 
 .building-common-area-input input:focus {
