@@ -115,7 +115,8 @@ describe("Type Definitions", () => {
 
     expect(floor.floorType).toBe("above-ground");
     // Type assertion to verify floorType is part of Floor interface
-    const floorType: "above-ground" | "basement" | "non-floor" | undefined = floor.floorType;
+    const floorType: "above-ground" | "basement" | "non-floor" | undefined =
+      floor.floorType;
     expect(floorType).toBe("above-ground");
   });
 
@@ -132,7 +133,8 @@ describe("Type Definitions", () => {
 
     expect(floor.floorType).toBe("basement");
     // Type assertion to verify floorType is part of Floor interface
-    const floorType: "above-ground" | "basement" | "non-floor" | undefined = floor.floorType;
+    const floorType: "above-ground" | "basement" | "non-floor" | undefined =
+      floor.floorType;
     expect(floorType).toBe("basement");
   });
 
