@@ -16,10 +16,26 @@
   overflow: hidden;
 }
 
-.usage-manager h3 {
-  margin: 0 0 0.25rem 0;
+/* ヘッダー部分：タイトルとボタンを横並びに */
+.usage-manager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.usage-manager-header h3 {
+  margin: 0;
   font-size: 1rem;
   color: #333;
+  flex: 0 0 auto;
+}
+
+.usage-manager-header .add-button {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .usages-list {
@@ -88,7 +104,6 @@
 }
 
 .add-button {
-  align-self: flex-start;
   background: #0066cc;
   color: #fff;
   border: none;

@@ -62,7 +62,12 @@ export function UsageManager({ floorId }: UsageManagerProps) {
 
   return (
     <div className="usage-manager">
-      <h3>用途管理</h3>
+      <div className="usage-manager-header">
+        <h3>用途管理</h3>
+        <button onClick={handleAddUsage} className="add-button">
+          用途を追加
+        </button>
+      </div>
       <div className="usages-list">
         {floor.usages.map((usage) => (
           <div key={usage.id} className="usage-item">
@@ -103,9 +108,6 @@ export function UsageManager({ floorId }: UsageManagerProps) {
           </div>
         ))}
       </div>
-      <button onClick={handleAddUsage} className="add-button">
-        用途を追加
-      </button>
     </div>
   );
 }
