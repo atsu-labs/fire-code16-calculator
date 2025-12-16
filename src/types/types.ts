@@ -285,7 +285,7 @@ export const buildingUses: BuildingUse[] = [
   // 6項ニ
   { code: "annex06_ni", name: "６項ニ" },
 
-  // 7項〜20項
+  // 7項〜15項
   { code: "annex07", name: "７項" },
   { code: "annex08", name: "８項" },
   { code: "annex09", name: "９項" },
@@ -295,13 +295,6 @@ export const buildingUses: BuildingUse[] = [
   { code: "annex13", name: "１３項" },
   { code: "annex14", name: "１４項" },
   { code: "annex15", name: "１５項" },
-  { code: "annex16", name: "１６項" },
-  { code: "annex16_2", name: "１６項の２" },
-  { code: "annex16_3", name: "１６項の３" },
-  { code: "annex17", name: "１７項" },
-  { code: "annex18", name: "１８項" },
-  { code: "annex19", name: "１９項" },
-  { code: "annex20", name: "２０項" },
 ];
 
 // ============================================================================
