@@ -6,6 +6,7 @@
  */
 
 import type { BuildingUsageTotal, UsageClassification } from '../types';
+import { buildingUses } from '../types';
 
 /**
  * 6項の集約マッピング
@@ -31,12 +32,6 @@ const ANNEX_06_AGGREGATION_MAP: Record<string, string> = {
 /**
  * 16項イに該当する用途のリスト
  * （1）項から（4）項まで、（5）項イ、（6）項、（9）項イ
- * 
- * 注意:
- * - 9項: 消防法施行令別表第一では9項イと9項ロに分類されるが、
- *   本システムでは9項として一括管理されている。
- *   9項イ（危険性の高い用途）が含まれる可能性があるため、
- *   安全側の判定として9項全体を16項イ対象用途として扱う。
  */
 const ANNEX_16_I_USAGES = [
   'annex01_i',
@@ -53,7 +48,7 @@ const ANNEX_16_I_USAGES = [
   'annex06_ro', // 集約後
   'annex06_ha', // 集約後
   'annex06_ni',
-  'annex09', // 9項全体（9項イ/ロの区別がないため安全側で16項イ対象とする）
+  'annex09_i', // 9項イ
 ];
 
 export class UsageClassifier {
@@ -278,17 +273,18 @@ export class UsageClassifier {
   }
 
   /**
-   * 16項イ、16項ロ、15項の判定
+   * 16項イ、16項ロ、または単一用途の判定
    * 
-   * - 用途が1つの場合: 15項
+   * - 用途が1つの場合: その用途コード（単一用途）
    * - 用途が2つ以上で、16項イ対象用途を含む場合: 16項イ
    * - 用途が2つ以上で、16項イ対象用途を含まない場合: 16項ロ
    */
   private determineClassification(
     usages: BuildingUsageTotal[]
-  ): 'annex16_i' | 'annex16_ro' | 'annex15' {
+  ): string {
     if (usages.length <= 1) {
-      return 'annex15';
+      // 単一用途の場合はその用途コードを返す
+      return usages[0]?.annexedCode || 'annex15';
     }
 
     // 16項イ対象用途が含まれているか確認
@@ -300,7 +296,7 @@ export class UsageClassifier {
   /**
    * 判定結果の表示名を取得
    */
-  private getDisplayName(classification: 'annex16_i' | 'annex16_ro' | 'annex15'): string {
+  private getDisplayName(classification: string): string {
     switch (classification) {
       case 'annex16_i':
         return '１６項イ';
@@ -308,6 +304,10 @@ export class UsageClassifier {
         return '１６項ロ';
       case 'annex15':
         return '１５項';
+      default:
+        // 単一用途の場合は、buildingUsesから表示名を取得
+        const usage = buildingUses.find(u => u.code === classification);
+        return usage ? usage.name : classification;
     }
   }
 
@@ -316,7 +316,7 @@ export class UsageClassifier {
    */
   private getClassificationDetails(
     usages: BuildingUsageTotal[],
-    classification: 'annex16_i' | 'annex16_ro' | 'annex15',
+    classification: string,
     subordinateUsages: BuildingUsageTotal[]
   ): string[] {
     const details: string[] = [];
@@ -326,8 +326,8 @@ export class UsageClassifier {
       details.push('みなし従属（主たる用途90%以上かつ他の用途300㎡未満）');
       details.push(`構成用途: ${usages.map(u => u.annexedName).join('、')}`);
       details.push(`従属とみなされる用途: ${subordinateUsages.map(u => u.annexedName).join('、')}`);
-    } else if (classification === 'annex15') {
-      // 単一用途の場合
+    } else if (classification !== 'annex16_i' && classification !== 'annex16_ro') {
+      // 単一用途の場合（16項イでも16項ロでもない場合）
       details.push(`単一用途: ${usages[0]?.annexedName || ''}`);
     } else {
       // 複合用途の場合

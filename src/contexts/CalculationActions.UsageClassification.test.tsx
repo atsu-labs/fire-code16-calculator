@@ -16,7 +16,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('CalculationActions - 用途判定機能の統合テスト', () => {
-  it('単一用途の場合、15項と判定される', async () => {
+  it('単一用途の場合、その用途コードと判定される', async () => {
     const { result } = renderHook(
       () => ({
         state: useAppState(),
@@ -47,8 +47,8 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
     // 用途判定を確認
     const classification = result.current.state.state.calculationResults?.usageClassification;
     expect(classification).toBeDefined();
-    expect(classification?.classification).toBe('annex15');
-    expect(classification?.displayName).toBe('１５項');
+    expect(classification?.classification).toBe('annex04');
+    expect(classification?.displayName).toBe('４項');
     expect(classification?.details[0]).toContain('単一用途: ４項');
   });
 
@@ -142,7 +142,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
     expect(classification?.details[0]).toContain('構成用途');
   });
 
-  it('6項イ(1)と6項イ(3)は集約されて単一用途（15項）と判定される', async () => {
+  it('6項イ(1)と6項イ(3)は集約されて単一用途（6項イ）と判定される', async () => {
     const { result } = renderHook(
       () => ({
         state: useAppState(),
@@ -182,8 +182,8 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
     // 用途判定を確認
     const classification = result.current.state.state.calculationResults?.usageClassification;
     expect(classification).toBeDefined();
-    expect(classification?.classification).toBe('annex15');
-    expect(classification?.displayName).toBe('１５項');
+    expect(classification?.classification).toBe('annex06_i');
+    expect(classification?.displayName).toBe('６項イ');
     expect(classification?.details[0]).toContain('単一用途: ６項イ');
   });
 
@@ -227,8 +227,8 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
     // 用途判定を確認
     const classification = result.current.state.state.calculationResults?.usageClassification;
     expect(classification).toBeDefined();
-    expect(classification?.classification).toBe('annex15');
-    expect(classification?.displayName).toBe('１５項');
+    expect(classification?.classification).toBe('annex04');
+    expect(classification?.displayName).toBe('４項');
     expect(classification?.details[0]).toContain('みなし従属');
     expect(classification?.subordinateUsages).toHaveLength(1);
     expect(classification?.subordinateUsages![0].annexedCode).toBe('annex07');
@@ -279,7 +279,8 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
     
     // 代替判定が存在することを確認
     expect(classification?.alternativeClassification).toBeDefined();
-    expect(classification?.alternativeClassification?.classification).toBe('annex15');
+    expect(classification?.alternativeClassification?.classification).toBe('annex04');
+    expect(classification?.alternativeClassification?.displayName).toBe('４項');
     expect(classification?.alternativeClassification?.note).toBe('６項ハに入居・宿泊がない場合');
   });
 });

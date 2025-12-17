@@ -34,8 +34,9 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 345);
 
-      // 単一用途（集約後）なので15項
-      expect(result.classification).toBe('annex15');
+      // 単一用途（集約後）なので6項イ
+      expect(result.classification).toBe('annex06_i');
+      expect(result.displayName).toBe('６項イ');
       expect(result.details).toContain('単一用途: ６項イ');
     });
 
@@ -63,7 +64,9 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 200);
 
-      expect(result.classification).toBe('annex15');
+      // 単一用途（集約後）なので6項ロ
+      expect(result.classification).toBe('annex06_ro');
+      expect(result.displayName).toBe('６項ロ');
       expect(result.details).toContain('単一用途: ６項ロ');
     });
 
@@ -91,13 +94,15 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 200);
 
-      expect(result.classification).toBe('annex15');
+      // 単一用途（集約後）なので6項ハ
+      expect(result.classification).toBe('annex06_ha');
+      expect(result.displayName).toBe('６項ハ');
       expect(result.details).toContain('単一用途: ６項ハ');
     });
   });
 
-  describe('15項の判定', () => {
-    it('単一用途の場合は15項と判定する', () => {
+  describe('単一用途の判定', () => {
+    it('単一用途の場合はその用途コードを判定する', () => {
       const usageTotals: BuildingUsageTotal[] = [
         {
           annexedCode: 'annex04',
@@ -112,8 +117,8 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 1150);
 
-      expect(result.classification).toBe('annex15');
-      expect(result.displayName).toBe('１５項');
+      expect(result.classification).toBe('annex04');
+      expect(result.displayName).toBe('４項');
       expect(result.details).toContain('単一用途: ４項');
     });
   });
@@ -261,8 +266,9 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 1000);
 
-      expect(result.classification).toBe('annex15');
-      expect(result.displayName).toBe('１５項');
+      // 従属とみなすので単一用途（4項）として判定
+      expect(result.classification).toBe('annex04');
+      expect(result.displayName).toBe('４項');
       expect(result.details[0]).toContain('みなし従属');
       expect(result.subordinateUsages).toHaveLength(1);
       expect(result.subordinateUsages![0].annexedCode).toBe('annex07');
@@ -438,9 +444,10 @@ describe('UsageClassifier', () => {
       // 6項ハを含む場合は16項イ
       expect(result.classification).toBe('annex16_i');
       
-      // 代替判定（6項ハに入居・宿泊がない場合）は15項（単一用途の4項のみ）
+      // 代替判定（6項ハに入居・宿泊がない場合）は単一用途（4項のみ）
       expect(result.alternativeClassification).toBeDefined();
-      expect(result.alternativeClassification!.classification).toBe('annex15');
+      expect(result.alternativeClassification!.classification).toBe('annex04');
+      expect(result.alternativeClassification!.displayName).toBe('４項');
       expect(result.alternativeClassification!.note).toBe('６項ハに入居・宿泊がない場合');
     });
 
@@ -459,7 +466,9 @@ describe('UsageClassifier', () => {
 
       const result = classifier.classify(usageTotals, 1000);
 
-      expect(result.classification).toBe('annex15');
+      // 6項ハのみの場合は単一用途として6項ハを返す
+      expect(result.classification).toBe('annex06_ha');
+      expect(result.displayName).toBe('６項ハ');
       expect(result.alternativeClassification).toBeUndefined();
     });
   });
