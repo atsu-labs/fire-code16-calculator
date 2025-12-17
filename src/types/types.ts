@@ -365,6 +365,14 @@ export const buildingUses: BuildingUse[] = [
   { code: "annex15", name: "１５項" },
 ];
 
+/**
+ * selectableBuildingUses - ユーザーが選択可能な用途のリスト
+ * 集約後の用途コード（annex06_i, annex06_ro, annex06_ha）を除外
+ */
+export const selectableBuildingUses: BuildingUse[] = buildingUses.filter(
+  use => !['annex06_i', 'annex06_ro', 'annex06_ha'].includes(use.code)
+);
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
