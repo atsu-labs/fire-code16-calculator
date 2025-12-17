@@ -170,12 +170,66 @@ export interface DistributionTrace {
 }
 
 /**
+ * UsageClassification - 用途判定結果
+ * 
+ * 複合用途防火対象物の用途分類を表す
+ */
+export interface UsageClassification {
+  /**
+   * 判定結果
+   * - 'annex16_i': 16項イ（危険性の高い用途を含む複合用途）
+   * - 'annex16_ro': 16項ロ（その他の複合用途）
+   * - 単一用途の場合: その用途コード（例: 'annex04', 'annex06_i'）
+   */
+  classification: string;
+
+  /**
+   * 判定結果の表示名
+   */
+  displayName: string;
+
+  /**
+   * 構成用途または「みなし従属」の詳細
+   */
+  details: string[];
+
+  /**
+   * 主たる用途（最大面積の用途）
+   */
+  mainUsage?: {
+    annexedCode: string;
+    annexedName: string;
+    area: number;
+  };
+
+  /**
+   * 従属的な部分とみなされた用途（存在する場合）
+   */
+  subordinateUsages?: {
+    annexedCode: string;
+    annexedName: string;
+    area: number;
+  }[];
+
+  /**
+   * 複数の判定がある場合（6項ハの入居・宿泊判定）
+   */
+  alternativeClassification?: {
+    classification: string;
+    displayName: string;
+    details: string[];
+    note: string;
+  };
+}
+
+/**
  * CalculationResults - 計算結果全体
  */
 export interface CalculationResults {
   floorResults: FloorResult[];
   buildingTotal: BuildingTotalResult;
   distributionTrace: DistributionTrace; // 按分経過表
+  usageClassification?: UsageClassification; // 用途判定結果
 }
 
 // ============================================================================
@@ -267,6 +321,7 @@ export const buildingUses: BuildingUse[] = [
   { code: "annex06_i_2", name: "６項イ(2)" },
   { code: "annex06_i_3", name: "６項イ(3)" },
   { code: "annex06_i_4", name: "６項イ(4)" },
+  { code: "annex06_i", name: "６項イ" }, // 集約後
 
   // 6項ロ
   { code: "annex06_ro_1", name: "６項ロ(1)" },
@@ -274,6 +329,7 @@ export const buildingUses: BuildingUse[] = [
   { code: "annex06_ro_3", name: "６項ロ(3)" },
   { code: "annex06_ro_4", name: "６項ロ(4)" },
   { code: "annex06_ro_5", name: "６項ロ(5)" },
+  { code: "annex06_ro", name: "６項ロ" }, // 集約後
 
   // 6項ハ
   { code: "annex06_ha_1", name: "６項ハ(1)" },
@@ -281,6 +337,7 @@ export const buildingUses: BuildingUse[] = [
   { code: "annex06_ha_3", name: "６項ハ(3)" },
   { code: "annex06_ha_4", name: "６項ハ(4)" },
   { code: "annex06_ha_5", name: "６項ハ(5)" },
+  { code: "annex06_ha", name: "６項ハ" }, // 集約後
 
   // 6項ニ
   { code: "annex06_ni", name: "６項ニ" },
@@ -288,14 +345,33 @@ export const buildingUses: BuildingUse[] = [
   // 7項〜15項
   { code: "annex07", name: "７項" },
   { code: "annex08", name: "８項" },
-  { code: "annex09", name: "９項" },
+  
+  // 9項
+  { code: "annex09_i", name: "９項イ" },
+  { code: "annex09_ro", name: "９項ロ" },
+  
   { code: "annex10", name: "１０項" },
   { code: "annex11", name: "１１項" },
-  { code: "annex12", name: "１２項" },
-  { code: "annex13", name: "１３項" },
+  
+  // 12項
+  { code: "annex12_i", name: "１２項イ" },
+  { code: "annex12_ro", name: "１２項ロ" },
+  
+  // 13項
+  { code: "annex13_i", name: "１３項イ" },
+  { code: "annex13_ro", name: "１３項ロ" },
+  
   { code: "annex14", name: "１４項" },
   { code: "annex15", name: "１５項" },
 ];
+
+/**
+ * selectableBuildingUses - ユーザーが選択可能な用途のリスト
+ * 集約後の用途コード（annex06_i, annex06_ro, annex06_ha）を除外
+ */
+export const selectableBuildingUses: BuildingUse[] = buildingUses.filter(
+  use => !['annex06_i', 'annex06_ro', 'annex06_ha'].includes(use.code)
+);
 
 // ============================================================================
 // Helper Functions

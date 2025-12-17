@@ -5,7 +5,7 @@
 
 import { useAppState } from '../contexts/useAppState';
 import { useUsageActions } from '../contexts/UsageActions';
-import { buildingUses } from '../types';
+import { selectableBuildingUses, buildingUses } from '../types';
 import '../styles/UsageManager.css';
 
 interface UsageManagerProps {
@@ -21,8 +21,8 @@ export function UsageManager({ floorId }: UsageManagerProps) {
 
   const handleAddUsage = async () => {
     const result = await addUsage(floorId, {
-      annexedCode: buildingUses[0].code,
-      annexedName: buildingUses[0].name,
+      annexedCode: selectableBuildingUses[0].code,
+      annexedName: selectableBuildingUses[0].name,
       exclusiveArea: 0,
     });
     if (!result.success) {
@@ -79,7 +79,7 @@ export function UsageManager({ floorId }: UsageManagerProps) {
                 onChange={(e) => handleUsageCodeChange(usage.id, e.target.value)}
                 aria-label="用途名"
               >
-                {buildingUses.map((use) => (
+                {selectableBuildingUses.map((use) => (
                   <option key={use.code} value={use.code}>
                     {use.name}
                   </option>
