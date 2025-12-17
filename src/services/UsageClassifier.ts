@@ -68,6 +68,15 @@ export class UsageClassifier {
     usageTotals: BuildingUsageTotal[],
     grandTotal: number
   ): UsageClassification {
+    // 入力データの検証
+    if (usageTotals.length === 0) {
+      throw new Error('用途データが空です。用途を追加してください。');
+    }
+    
+    if (grandTotal <= 0) {
+      throw new Error('建物の延べ面積が0以下です。正しい面積を入力してください。');
+    }
+
     // 1. 6項の集約を行う
     const aggregatedUsages = this.aggregateAnnex06(usageTotals);
 
@@ -84,20 +93,35 @@ export class UsageClassifier {
     const classification = this.determineClassification(effectiveUsages);
 
     // 5. 6項ハの入居・宿泊判定（データがないので両方のケースを判定）
-    const hasAnnex06Ha = effectiveUsages.some(u => u.annexedCode === 'annex06_ha');
+    // aggregatedUsagesから6項ハの存在を確認（従属判定前の状態）
+    const hasAnnex06Ha = aggregatedUsages.some(u => u.annexedCode === 'annex06_ha');
     let alternativeClassification = undefined;
 
     if (hasAnnex06Ha && effectiveUsages.length > 1) {
       // 6項ハがある場合、入居・宿泊ありとなしの両方のケースを判定
       const usagesWithout06Ha = effectiveUsages.filter(u => u.annexedCode !== 'annex06_ha');
-      const alternativeClass = this.determineClassification(usagesWithout06Ha);
+      
+      // 6項ハを除外した場合の従属判定を再計算
+      const alternativeSubordinate = usagesWithout06Ha.length > 0
+        ? this.determineSubordinateUsages(usagesWithout06Ha, grandTotal)
+        : { mainUsage: null, subordinateUsages: [], independentUsages: [] };
+      
+      const alternativeEffectiveUsages = alternativeSubordinate.independentUsages.length > 0
+        ? alternativeSubordinate.independentUsages
+        : usagesWithout06Ha;
+      
+      const alternativeClass = this.determineClassification(alternativeEffectiveUsages);
       
       // 判定結果が異なる場合のみ代替判定を表示
       if (alternativeClass !== classification) {
         alternativeClassification = {
           classification: alternativeClass,
           displayName: this.getDisplayName(alternativeClass),
-          details: this.getClassificationDetails(usagesWithout06Ha, alternativeClass, subordinateUsages),
+          details: this.getClassificationDetails(
+            alternativeEffectiveUsages, 
+            alternativeClass, 
+            alternativeSubordinate.subordinateUsages
+          ),
           note: '６項ハに入居・宿泊がない場合',
         };
       }
@@ -133,13 +157,17 @@ export class UsageClassifier {
       const targetCode = ANNEX_06_AGGREGATION_MAP[usage.annexedCode] || usage.annexedCode;
 
       if (aggregatedMap.has(targetCode)) {
-        // すでに存在する場合は加算
+        // すでに存在する場合は新しいオブジェクトを作成して置き換える（元のデータを変更しない）
         const existing = aggregatedMap.get(targetCode)!;
-        existing.exclusiveArea += usage.exclusiveArea;
-        existing.floorCommonArea += usage.floorCommonArea;
-        existing.buildingCommonArea += usage.buildingCommonArea;
-        existing.usageGroupCommonArea += usage.usageGroupCommonArea;
-        existing.totalArea += usage.totalArea;
+        aggregatedMap.set(targetCode, {
+          annexedCode: existing.annexedCode,
+          annexedName: existing.annexedName,
+          exclusiveArea: existing.exclusiveArea + usage.exclusiveArea,
+          floorCommonArea: existing.floorCommonArea + usage.floorCommonArea,
+          buildingCommonArea: existing.buildingCommonArea + usage.buildingCommonArea,
+          usageGroupCommonArea: existing.usageGroupCommonArea + usage.usageGroupCommonArea,
+          totalArea: existing.totalArea + usage.totalArea,
+        });
       } else {
         // 新規作成（集約された場合は用途名を更新）
         const annexedName = targetCode !== usage.annexedCode
@@ -183,7 +211,7 @@ export class UsageClassifier {
    * 条件：
    * - 主たる用途の面積が延べ面積の90%以上
    * - かつ、主たる用途以外の独立した用途の面積が300㎡未満
-   * - ただし、除外用途（2項ニ、5項イ、6項イ(1)〜(3)、6項ロ、6項ハ（入居・宿泊あり））は従属とみなせない
+   * - ただし、除外用途（2項ニ、5項イ、6項イ、6項ロ、6項ハ（入居・宿泊あり））は従属とみなせない
    * 
    * @returns 主たる用途、従属的な部分、独立した用途のリスト
    */

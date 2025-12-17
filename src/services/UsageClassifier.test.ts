@@ -534,4 +534,68 @@ describe('UsageClassifier', () => {
       expect(result.details[0]).not.toContain('みなし従属');
     });
   });
+
+  describe('エラーハンドリング', () => {
+    it('空の用途データを渡すとエラーを投げる', () => {
+      expect(() => {
+        classifier.classify([], 1000);
+      }).toThrow('用途データが空です。用途を追加してください。');
+    });
+
+    it('延べ面積が0以下の場合エラーを投げる', () => {
+      const usageTotals: BuildingUsageTotal[] = [
+        {
+          annexedCode: 'annex04',
+          annexedName: '４項',
+          exclusiveArea: 100,
+          floorCommonArea: 0,
+          buildingCommonArea: 0,
+          usageGroupCommonArea: 0,
+          totalArea: 100,
+        },
+      ];
+
+      expect(() => {
+        classifier.classify(usageTotals, 0);
+      }).toThrow('建物の延べ面積が0以下です。正しい面積を入力してください。');
+
+      expect(() => {
+        classifier.classify(usageTotals, -100);
+      }).toThrow('建物の延べ面積が0以下です。正しい面積を入力してください。');
+    });
+  });
+
+  describe('オブジェクトの不変性', () => {
+    it('集約時に元の入力データを変更しない', () => {
+      const usageTotals: BuildingUsageTotal[] = [
+        {
+          annexedCode: 'annex06_i_1',
+          annexedName: '６項イ(1)',
+          exclusiveArea: 100,
+          floorCommonArea: 10,
+          buildingCommonArea: 5,
+          usageGroupCommonArea: 0,
+          totalArea: 115,
+        },
+        {
+          annexedCode: 'annex06_i_3',
+          annexedName: '６項イ(3)',
+          exclusiveArea: 200,
+          floorCommonArea: 20,
+          buildingCommonArea: 10,
+          usageGroupCommonArea: 0,
+          totalArea: 230,
+        },
+      ];
+
+      // 元のデータのコピーを作成
+      const originalData = JSON.parse(JSON.stringify(usageTotals));
+
+      // 分類を実行
+      classifier.classify(usageTotals, 345);
+
+      // 元のデータが変更されていないことを確認
+      expect(usageTotals).toEqual(originalData);
+    });
+  });
 });
