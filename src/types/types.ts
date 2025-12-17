@@ -170,12 +170,66 @@ export interface DistributionTrace {
 }
 
 /**
+ * UsageClassification - 用途判定結果
+ * 
+ * 複合用途防火対象物の用途分類を表す
+ */
+export interface UsageClassification {
+  /**
+   * 判定結果
+   * - 'annex16_i': 16項イ（危険性の高い用途を含む複合用途）
+   * - 'annex16_ro': 16項ロ（その他の複合用途）
+   * - 'annex15': 15項（単一用途とみなされる）
+   */
+  classification: 'annex16_i' | 'annex16_ro' | 'annex15';
+
+  /**
+   * 判定結果の表示名
+   */
+  displayName: string;
+
+  /**
+   * 構成用途または「みなし従属」の詳細
+   */
+  details: string[];
+
+  /**
+   * 主たる用途（最大面積の用途）
+   */
+  mainUsage?: {
+    annexedCode: string;
+    annexedName: string;
+    area: number;
+  };
+
+  /**
+   * 従属的な部分とみなされた用途（存在する場合）
+   */
+  subordinateUsages?: {
+    annexedCode: string;
+    annexedName: string;
+    area: number;
+  }[];
+
+  /**
+   * 複数の判定がある場合（6項ハの入居・宿泊判定）
+   */
+  alternativeClassification?: {
+    classification: 'annex16_i' | 'annex16_ro' | 'annex15';
+    displayName: string;
+    details: string[];
+    note: string;
+  };
+}
+
+/**
  * CalculationResults - 計算結果全体
  */
 export interface CalculationResults {
   floorResults: FloorResult[];
   buildingTotal: BuildingTotalResult;
   distributionTrace: DistributionTrace; // 按分経過表
+  usageClassification?: UsageClassification; // 用途判定結果
 }
 
 // ============================================================================

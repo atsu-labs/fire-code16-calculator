@@ -40,8 +40,10 @@ import {
   type DistributionDetail,
 } from '../types';
 import { CalculationEngine } from '../services/CalculationEngine';
+import { UsageClassifier } from '../services/UsageClassifier';
 
 const calculationEngine = new CalculationEngine();
+const usageClassifier = new UsageClassifier();
 
 /**
  * useCalculationActions - 計算実行アクションを提供するカスタムフック
@@ -550,6 +552,12 @@ export function useCalculationActions() {
         };
       });
 
+      // 用途判定を実行
+      const usageClassification = usageClassifier.classify(
+        aggregationResult.value.usageTotals,
+        aggregationResult.value.grandTotal
+      );
+
       // 計算結果を保存
       dispatch({
         type: 'SET_CALCULATION_RESULTS',
@@ -560,6 +568,7 @@ export function useCalculationActions() {
             buildingCommonTraces,
             usageGroupTraces,
           },
+          usageClassification,
         },
       });
 

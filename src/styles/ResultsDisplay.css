@@ -346,3 +346,94 @@
 .distribution-trace .result-table tbody tr:hover {
   background-color: #f1f8e9;
 }
+
+/* 用途判定 */
+.usage-classification {
+  margin-bottom: 0.6rem;
+  padding: 0.5rem;
+  background-color: #fff3e0;
+  border: 2px solid #ff9800;
+  border-radius: 4px;
+}
+
+.usage-classification h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  color: #e65100;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  border-bottom: 2px solid #ff9800;
+}
+
+.classification-result {
+  background-color: white;
+  padding: 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #ffe0b2;
+}
+
+.classification-main {
+  margin-bottom: 0.4rem;
+  padding: 0.4rem;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.classification-type {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.classification-details {
+  margin-top: 0.4rem;
+  padding: 0.4rem;
+  background-color: #fff9e6;
+  border-radius: 3px;
+  border-left: 4px solid #ff9800;
+}
+
+.classification-detail {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #333;
+}
+
+.classification-alternative {
+  margin-top: 0.6rem;
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border: 1px dashed #ff9800;
+  border-radius: 3px;
+}
+
+.alternative-note {
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.alternative-result {
+  margin: 0.3rem 0;
+  padding: 0.3rem;
+  background-color: #ffb74d;
+  color: white;
+  border-radius: 3px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.alternative-details {
+  margin-top: 0.3rem;
+  padding: 0.3rem;
+  background-color: white;
+  border-radius: 3px;
+  border-left: 3px solid #ffb74d;
+}
+
+.alternative-details .classification-detail {
+  font-size: 0.8rem;
+}

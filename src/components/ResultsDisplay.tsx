@@ -352,6 +352,46 @@ export function ResultsDisplay() {
         </div>
       )}
 
+      {/* 用途判定結果 */}
+      {state.calculationResults?.usageClassification && (
+        <div className="usage-classification">
+          <h3>用途判定</h3>
+          <div className="classification-result">
+            <div className="classification-main">
+              <strong className="classification-type">
+                {state.calculationResults.usageClassification.displayName}
+              </strong>
+            </div>
+            <div className="classification-details">
+              {state.calculationResults.usageClassification.details.map((detail, index) => (
+                <div key={index} className="classification-detail">
+                  {detail}
+                </div>
+              ))}
+            </div>
+            {state.calculationResults.usageClassification.alternativeClassification && (
+              <div className="classification-alternative">
+                <div className="alternative-note">
+                  ※ {state.calculationResults.usageClassification.alternativeClassification.note}
+                </div>
+                <div className="alternative-result">
+                  <strong>
+                    {state.calculationResults.usageClassification.alternativeClassification.displayName}
+                  </strong>
+                </div>
+                <div className="alternative-details">
+                  {state.calculationResults.usageClassification.alternativeClassification.details.map((detail, index) => (
+                    <div key={index} className="classification-detail">
+                      {detail}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 按分経過表 */}
       {distributionTrace && (
         <>
