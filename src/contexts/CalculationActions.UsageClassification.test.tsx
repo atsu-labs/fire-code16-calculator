@@ -27,11 +27,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 4項を追加（1000㎡）
@@ -67,11 +63,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 1項イを追加（500㎡）
@@ -116,11 +108,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 7項を追加（500㎡）
@@ -165,11 +153,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 6項イ(1)を追加（300㎡）
@@ -214,11 +198,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 4項を追加（950㎡）
@@ -265,11 +245,7 @@ describe('CalculationActions - 用途判定機能の統合テスト', () => {
       { wrapper }
     );
 
-    // 階を追加
-    await act(async () => {
-      await result.current.floorActions.addFloor();
-    });
-
+    // デフォルトで1階が存在する
     const floorId = result.current.state.state.building.floors[0].id;
 
     // 6項ハ(2)を追加（500㎡）
